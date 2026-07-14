@@ -21,7 +21,7 @@ python -m mtg_deck_builder.cli --csv cards.csv build "Jodah, the Unifier" \
     --report jodah.html --output jodah.txt
 ```
 
-> **Status:** personal project / portfolio piece. 873 passing tests; runs on
+> **Status:** personal project / portfolio piece. 807 passing tests; runs on
 > Python 3.10+. Builds call the Anthropic API and cost roughly **$2–6** each
 > depending on the commander's colors.
 
@@ -203,7 +203,7 @@ trying the machinery without a key.
 ## Testing
 
 ```bash
-python -m pytest mtg_deck_builder/tests -q      # 873 tests
+python -m pytest mtg_deck_builder/tests -q      # 807 tests
 ```
 
 The suite runs entirely offline (mock LLM, local fixture `test_cards.csv`) and
