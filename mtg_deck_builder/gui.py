@@ -229,8 +229,18 @@ def build_prefix(commander: str, now: Optional[time.struct_time] = None) -> str:
 
 def safe_relpath(raw: str) -> Optional[Path]:
     """Resolve a client-supplied relative path and confirm it stays inside
-    the working directory. Returns the resolved Path or None."""
-    raw = urllib.parse.unquote(raw or "").replace("\\", "/").lstrip("/")
+    the working directory. Returns the resolved Path or None.
+
+    A Windows drive-letter path (e.g. "C:/...") is rejected on EVERY OS: a
+    legitimate file request is always relative, and on POSIX such a path
+    would otherwise be treated as a literal "C:" subfolder inside the
+    sandbox rather than flagged — so rejecting it keeps behavior identical
+    across platforms.
+    """
+    raw = urllib.parse.unquote(raw or "").replace("\\", "/")
+    if re.match(r"[A-Za-z]:", raw):
+        return None
+    raw = raw.lstrip("/")
     if not raw:
         return None
     p = (Path(".") / raw).resolve()
