@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Analyze — MTG Deck Builder{% endblock %}
+{% block content %}
+<h1>Analyze a commander</h1>
+
+{% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+<p>Run just the LLM commander-analysis phase. Returns key mechanics,
+  recommended weights, role targets, and evaluation notes without
+  running a full GA optimization.</p>
+
+<form method="post" action="/analyze">
+  <div class="panel">
+    <label>Commander name
+      <input type="text" name="commander_name" list="commander-list" required>
+      <datalist id="commander-list">
+        {% for c in commanders %}<option value="{{ c }}">{% endfor %}
+      </datalist>
+    </label>
+    {% if mock_llm %}
+    <p class="muted"><strong>Mock mode</strong> — returns a deterministic
+      generic analysis instead of hitting the LLM.</p>
+    {% else %}
+    <label><input type="checkbox" name="mock"> Use mock LLM (no API key needed)</label>
+    {% endif %}
+  </div>
+  <button type="submit">Analyze</button>
+</form>
+{% endblock %}

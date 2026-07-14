@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MTG Deck Builder</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c232d; --panel3:#232b37;
+    --fg:#e2e8f0; --muted:#8b96a5; --accent:#5b9dff; --accent2:#7c5cff;
+    --good:#3fb96a; --warn:#d9a03f; --bad:#e5534b; --border:#2a323e;
+    --radius:10px;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:
+           radial-gradient(1200px 500px at 70% -10%, #1a2233 0%, var(--bg) 55%);
+         color:var(--fg); font:14px/1.5 system-ui, "Segoe UI", sans-serif;
+         min-height:100vh; }
+  .wrap { max-width:1240px; margin:0 auto; padding:22px 22px 60px; }
+  h1 { font-size:21px; margin:0; letter-spacing:.01em; }
+  h1 .accent { color:var(--accent); }
+  .topbar { display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+            margin-bottom:16px; }
+  .topbar .sub { color:var(--muted); font-size:12px; }
+  .keybox { display:flex; align-items:center; gap:8px; margin-left:auto; }
+  .keybox input { width:225px; }
+  .pill { font-size:11px; padding:3px 10px; border-radius:99px;
+          border:1px solid var(--border); color:var(--muted);
+          white-space:nowrap; }
+  .pill.ok { color:var(--good); border-color:rgba(63,185,106,.5); }
+  .pill.bad { color:var(--bad); border-color:rgba(229,83,75,.5); }
+
+  .tabs { display:flex; gap:6px; margin-bottom:18px;
+          border-bottom:1px solid var(--border); }
+  .tab { padding:10px 26px; cursor:pointer; color:var(--muted);
+         font-size:14px; user-select:none; border-radius:9px 9px 0 0;
+         border:1px solid transparent; transition:color .15s; }
+  .tab:hover { color:var(--fg); }
+  .tab.active { background:var(--panel); color:var(--fg);
+                border-color:var(--border);
+                border-bottom-color:var(--panel); margin-bottom:-1px; }
+
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:940px) { .grid { grid-template-columns:1fr; } }
+  .card { background:var(--panel); border:1px solid var(--border);
+          border-radius:var(--radius); padding:18px;
+          box-shadow:0 2px 14px rgba(0,0,0,.25); }
+  .card h2 { font-size:12.5px; margin:0 0 14px; text-transform:uppercase;
+             letter-spacing:.08em; color:var(--muted); }
+
+  label { display:flex; align-items:center; gap:6px; font-size:12px;
+          color:var(--muted); margin:11px 0 4px; }
+  input[type=text], input[type=number], input[type=password], select {
+    width:100%; padding:8px 10px; background:var(--panel2); color:var(--fg);
+    border:1px solid var(--border); border-radius:7px; font-size:14px;
+    outline:none; transition:border-color .15s; }
+  input:focus, select:focus { border-color:var(--accent); }
+  input[type=checkbox] { accent-color:var(--accent); width:15px; height:15px; }
+  .row { display:flex; gap:10px; }
+  .row > div { flex:1; min-width:0; }
+  .chk { display:flex; align-items:center; gap:8px; margin:9px 0;
+         font-size:13.5px; }
+  details { border:1px solid var(--border); border-radius:9px;
+            margin:10px 0; background:var(--panel2); overflow:hidden; }
+  details > summary { cursor:pointer; padding:10px 13px; font-size:13px;
+                      color:var(--accent); user-select:none; }
+  details > summary:hover { background:var(--panel3); }
+  details > .inner { padding:2px 13px 13px; }
+
+  button { padding:9px 18px; border:0; border-radius:8px; font-size:14px;
+           cursor:pointer; color:#fff; font-weight:500;
+           background:linear-gradient(180deg, var(--accent), #3d7fe0);
+           transition:filter .12s, transform .05s; }
+  button:hover { filter:brightness(1.1); }
+  button:active { transform:translateY(1px); }
+  button.secondary { background:var(--panel3); color:var(--fg);
+                     border:1px solid var(--border); }
+  button.danger { background:linear-gradient(180deg, var(--bad), #c23a33); }
+  button.small { padding:5px 12px; font-size:12.5px; }
+  button:disabled { opacity:.4; cursor:not-allowed; }
+  .actions { display:flex; gap:10px; margin-top:16px; align-items:center;
+             flex-wrap:wrap; }
+  .hint { font-size:11.5px; color:var(--muted); }
+
+  /* help tooltips */
+  .help { display:inline-flex; align-items:center; justify-content:center;
+          width:15px; height:15px; border-radius:50%; font-size:10.5px;
+          background:var(--panel3); border:1px solid var(--border);
+          color:var(--muted); cursor:help; flex:none; }
+  .help:hover { color:var(--accent); border-color:var(--accent); }
+  #tip { position:fixed; z-index:100; max-width:340px; display:none;
+         background:#0b0e13; border:1px solid var(--accent);
+         border-radius:9px; padding:11px 13px; font-size:12.5px;
+         line-height:1.55; color:var(--fg);
+         box-shadow:0 8px 30px rgba(0,0,0,.6); }
+  #tip .d { color:var(--muted); display:block; margin-top:6px;
+            font-size:11.5px; }
+
+  /* console */
+  #console { background:#0a0d12; border:1px solid var(--border);
+             border-radius:8px; padding:10px; height:300px; overflow:auto;
+             font:12px/1.55 Consolas, monospace; white-space:pre-wrap; }
+  .status { font-size:13px; margin-bottom:8px; display:flex;
+            align-items:center; gap:7px; }
+  .status .dot { width:9px; height:9px; border-radius:50%; flex:none; }
+  .running .dot { background:var(--accent); animation:pulse 1.2s infinite; }
+  .ok .dot { background:var(--good); } .fail .dot { background:var(--bad); }
+  .idle .dot { background:var(--muted); }
+  @keyframes pulse { 50% { opacity:.3; } }
+  #elapsed { margin-left:auto; color:var(--muted); font-size:12px; }
+  #doneBanner { display:flex; align-items:center; gap:12px; padding:13px 15px;
+    border-radius:9px; margin-bottom:10px; font-size:14.5px; font-weight:600;
+    animation:slidein .2s ease-out; }
+  #doneBanner.good { background:rgba(63,185,106,.14);
+    border:1px solid var(--good); color:var(--good); }
+  #doneBanner.bad { background:rgba(229,83,75,.14);
+    border:1px solid var(--bad); color:var(--bad); }
+  #doneBanner button { margin-left:auto; }
+  #console .exit0 { color:var(--good); font-weight:700; }
+  #console .exitbad { color:var(--bad); font-weight:700; }
+  #console .cmd { color:var(--muted); }
+
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  td { padding:5.5px 8px; border-top:1px solid var(--border); }
+  tr:hover td { background:var(--panel2); }
+  td.gslug { color:var(--accent); font-weight:600; font-size:12px;
+             text-transform:uppercase; letter-spacing:.05em;
+             padding-top:13px; border-top:0; }
+  td.gslug:hover { background:none; }
+  a { color:var(--accent); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+
+  .colors { display:flex; gap:13px; margin:8px 0; }
+  .colors label { display:flex; align-items:center; gap:5px; margin:0;
+                  font-size:14px; color:var(--fg); }
+
+  /* deck viewer */
+  .deckhead { display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+              margin-bottom:6px; }
+  .deckhead h3 { margin:0; font-size:18px; }
+  .viewtoggle { display:flex; border:1px solid var(--border);
+                border-radius:8px; overflow:hidden; }
+  .viewtoggle div { padding:6px 15px; font-size:12.5px; cursor:pointer;
+                    color:var(--muted); user-select:none; }
+  .viewtoggle div.active { background:var(--accent); color:#fff; }
+  .toolbar { display:flex; gap:8px; margin-left:auto; align-items:center;
+             flex-wrap:wrap; }
+  #curve { display:flex; align-items:flex-end; gap:4px; height:52px;
+           margin:10px 0 4px; }
+  #curve .bar { flex:1; max-width:44px; background:
+      linear-gradient(180deg, var(--accent2), var(--accent));
+      border-radius:4px 4px 0 0; position:relative; min-height:2px; }
+  #curve .bar span { position:absolute; top:-17px; left:0; right:0;
+      text-align:center; font-size:10.5px; color:var(--muted); }
+  #curve .bar em { position:absolute; bottom:-17px; left:0; right:0;
+      text-align:center; font-size:10.5px; font-style:normal;
+      color:var(--muted); }
+  .curvewrap { padding:16px 6px 18px; }
+  .secname { font-size:12.5px; text-transform:uppercase;
+             letter-spacing:.06em; color:var(--muted); margin:16px 0 8px;
+             border-bottom:1px solid var(--border); padding-bottom:4px; }
+  .listcols { columns:3 230px; column-gap:24px; }
+  .cardrow { break-inside:avoid; padding:2.5px 5px; border-radius:5px;
+             font-size:13.5px; display:flex; gap:6px; align-items:center; }
+  .cardrow:hover { background:var(--panel2); color:var(--accent); }
+  .cardrow .ct { color:var(--muted); flex:none; width:22px; }
+  .cardrow .mv { margin-left:auto; color:var(--muted); font-size:11px; }
+  #hoverimg { position:fixed; pointer-events:none; z-index:50; display:none;
+              width:250px; border-radius:12px;
+              box-shadow:0 8px 34px rgba(0,0,0,.7); }
+  .imggrid { display:grid; gap:10px;
+             grid-template-columns:repeat(auto-fill, minmax(160px,1fr)); }
+  .imggrid .cimg { position:relative; transition:transform .12s; }
+  .imggrid .cimg:hover { transform:scale(1.04); z-index:5; }
+  .imggrid img { width:100%; border-radius:8px; display:block; }
+  .imggrid .noimg { aspect-ratio:63/88; border-radius:8px;
+    background:var(--panel2); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    text-align:center; padding:8px; font-size:12.5px; color:var(--muted); }
+  .imggrid .badge { position:absolute; top:6px; left:6px;
+    background:rgba(0,0,0,.78); color:#fff; font-size:12px;
+    padding:1px 7px; border-radius:99px; }
+  .loading { color:var(--muted); font-size:13px; padding:22px 0; }
+
+  /* editor */
+  .editrow { display:flex; align-items:center; gap:7px; padding:3px 5px;
+             border-radius:6px; font-size:13.5px; break-inside:avoid; }
+  .editrow:hover { background:var(--panel2); }
+  .editrow .step { width:22px; height:22px; padding:0; font-size:13px;
+                   line-height:1; border-radius:5px; flex:none; }
+  .editrow .cnt { width:20px; text-align:center; color:var(--muted);
+                  flex:none; }
+  .editrow .nm { overflow:hidden; text-overflow:ellipsis;
+                 white-space:nowrap; }
+  .editrow .rm { margin-left:auto; }
+  .editbar { display:flex; gap:9px; align-items:center; flex-wrap:wrap;
+             padding:11px; background:var(--panel2); border-radius:9px;
+             margin-bottom:8px; border:1px solid var(--border); }
+  .dirty { color:var(--warn); font-size:12px; }
+
+  /* autocomplete */
+  .acwrap { position:relative; }
+  .acdrop { position:absolute; top:100%; left:0; right:0; z-index:40;
+            background:#12161d; border:1px solid var(--accent);
+            border-radius:0 0 8px 8px; max-height:260px; overflow:auto;
+            display:none; }
+  .acdrop div { padding:7px 11px; cursor:pointer; font-size:13px;
+                display:flex; justify-content:space-between; gap:10px; }
+  .acdrop div:hover, .acdrop div.sel { background:var(--panel3); }
+  .acdrop .t { color:var(--muted); font-size:11.5px; white-space:nowrap;
+               overflow:hidden; text-overflow:ellipsis; max-width:45%; }
+
+  /* toasts */
+  #toasts { position:fixed; right:18px; bottom:18px; z-index:200;
+            display:flex; flex-direction:column; gap:9px; max-width:380px; }
+  .toast { background:#12161d; border:1px solid var(--border);
+           border-left:4px solid var(--accent); border-radius:9px;
+           padding:11px 14px; font-size:13px;
+           box-shadow:0 8px 30px rgba(0,0,0,.55);
+           animation:slidein .18s ease-out; }
+  .toast.good { border-left-color:var(--good); }
+  .toast.warn { border-left-color:var(--warn); }
+  .toast.bad { border-left-color:var(--bad); }
+  @keyframes slidein { from { opacity:0; transform:translateX(24px); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div>
+      <h1>MTG <span class="accent">Deck Builder</span></h1>
+      <div class="sub">CSV: <span id="csvPath">…</span></div>
+    </div>
+    <div class="keybox">
+      <span class="help" data-h="api_key">?</span>
+      <span class="pill" id="keyPill">key: …</span>
+      <input type="password" id="apiKey" placeholder="ANTHROPIC_API_KEY">
+      <button class="secondary small" id="btnSaveKey">Save</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="build">Build</div>
+    <div class="tab" data-tab="output">Output</div>
+  </div>
+
+  <!-- ================= BUILD TAB ================= -->
+  <div id="tab-build">
+  <div class="grid">
+    <div class="card">
+      <h2>Build a deck</h2>
+      <label>Commander <span class="help" data-h="commander">?</span></label>
+      <div class="acwrap">
+        <input type="text" id="commander" placeholder="Start typing a legendary creature…"
+               autocomplete="off">
+        <div class="acdrop" id="acCommander"></div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Bracket <span class="help" data-h="bracket">?</span></label>
+          <select id="bracket">
+            <option value="1">1 — Exhibition</option>
+            <option value="2">2 — Core</option>
+            <option value="3">3 — Upgraded</option>
+            <option value="4" selected>4 — Optimized</option>
+            <option value="5">5 — cEDH</option>
+          </select>
+        </div>
+        <div>
+          <label>Seed <span class="help" data-h="seed">?</span></label>
+          <input type="number" id="seed" value="42">
+        </div>
+        <div>
+          <label>Budget $/card <span class="help" data-h="budget">?</span></label>
+          <input type="number" id="budget" step="0.5" placeholder="off">
+        </div>
+      </div>
+
+      <details>
+        <summary>Advanced — GA &amp; refinement</summary>
+        <div class="inner">
+          <div class="row">
+            <div><label>Generations <span class="help" data-h="generations">?</span></label>
+              <input type="number" id="generations" value="300" min="10" max="2000"></div>
+            <div><label>Population <span class="help" data-h="population">?</span></label>
+              <input type="number" id="population" value="100" min="10" max="500"></div>
+          </div>
+          <div class="row">
+            <div><label>Refine rounds <span class="help" data-h="refine">?</span></label>
+              <input type="number" id="refine" value="3" min="0" max="5"></div>
+            <div><label>Max swaps/round <span class="help" data-h="refine_max_swaps">?</span></label>
+              <input type="number" id="refine_max_swaps" value="8" min="1" max="20"></div>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>Advanced — recall channels</summary>
+        <div class="inner">
+          <div class="chk"><input type="checkbox" id="recall_edhrec" checked>
+            <span>EDHREC recall</span>
+            <span class="help" data-h="recall_edhrec">?</span></div>
+          <div class="chk"><input type="checkbox" id="recall_embeddings" checked>
+            <span>Embedding recall</span>
+            <span class="help" data-h="recall_embeddings">?</span></div>
+          <div class="chk"><input type="checkbox" id="recall_patterns" checked>
+            <span>Pattern recall</span>
+            <span class="help" data-h="recall_patterns">?</span></div>
+          <div class="row">
+            <div><label>EDHREC limit <span class="help" data-h="recall_edhrec_limit">?</span></label>
+              <input type="number" id="recall_edhrec_limit" value="300"></div>
+            <div><label>Embedding limit <span class="help" data-h="recall_embedding_limit">?</span></label>
+              <input type="number" id="recall_embedding_limit" value="1500"></div>
+            <div><label>Pool cap <span class="help" data-h="recall_pool_cap">?</span></label>
+              <input type="number" id="recall_pool_cap" value="2500"></div>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>Advanced — scoring &amp; power</summary>
+        <div class="inner">
+          <div class="row">
+            <div><label>Synergy scoring <span class="help" data-h="synergy_scoring_mode">?</span></label>
+              <select id="synergy_scoring_mode">
+                <option>auto</option><option selected>llm</option>
+                <option>embedding</option>
+              </select></div>
+            <div><label>Card power <span class="help" data-h="card_power_mode">?</span></label>
+              <select id="card_power_mode">
+                <option>off</option><option selected>llm</option>
+              </select></div>
+          </div>
+          <div class="row">
+            <div><label>Tournament model <span class="help" data-h="tournament_model">?</span></label>
+              <input type="text" id="tournament_model" value="claude-haiku-4-5"></div>
+            <div><label>Main model <span class="help" data-h="model">?</span></label>
+              <input type="text" id="model" value="claude-sonnet-4-6"></div>
+          </div>
+          <div class="row">
+            <div><label>Engine target <span class="help" data-h="synergy_engine_target">?</span></label>
+              <input type="number" id="synergy_engine_target" value="25"></div>
+            <div><label>Shortlist <span class="help" data-h="synergy_engine_shortlist">?</span></label>
+              <input type="number" id="synergy_engine_shortlist" value="300"></div>
+            <div><label>Engine bypass <span class="help" data-h="synergy_engine_bypass">?</span></label>
+              <input type="number" id="synergy_engine_bypass" value="12"></div>
+          </div>
+          <div class="row">
+            <div><label>Power staples <span class="help" data-h="power_staples">?</span></label>
+              <input type="number" id="power_staples" value="60"></div>
+            <div><label>Role power bypass <span class="help" data-h="role_power_bypass">?</span></label>
+              <input type="number" id="role_power_bypass" value="15"></div>
+            <div><label>Consistency wt <span class="help" data-h="consistency_weight">?</span></label>
+              <input type="number" id="consistency_weight" value="0.12" step="0.01"></div>
+          </div>
+          <div class="chk"><input type="checkbox" id="quality_roles" checked>
+            <span>Quality-weighted role counts</span>
+            <span class="help" data-h="quality_roles">?</span></div>
+        </div>
+      </details>
+
+      <details>
+        <summary>Advanced — combos &amp; boosts</summary>
+        <div class="inner">
+          <div class="row">
+            <div><label>Combos <span class="help" data-h="combos">?</span></label>
+              <select id="combos"><option>off</option><option selected>llm</option></select></div>
+            <div><label>Combo weight <span class="help" data-h="combo_weight">?</span></label>
+              <input type="number" id="combo_weight" value="0.12" step="0.01"></div>
+          </div>
+          <div class="chk"><input type="checkbox" id="signature_pass" checked>
+            <span>Signature-combo pass</span>
+            <span class="help" data-h="signature_pass">?</span></div>
+          <div class="chk"><input type="checkbox" id="synergy_cache" checked>
+            <span>Synergy-score cache</span>
+            <span class="help" data-h="synergy_cache">?</span></div>
+          <div class="chk"><input type="checkbox" id="analysis_cache" checked>
+            <span>Analysis cache</span>
+            <span class="help" data-h="analysis_cache">?</span></div>
+          <div class="row">
+            <div><label>Engine boost <span class="help" data-h="engine_boost">?</span></label>
+              <select id="engine_boost">
+                <option>off</option><option>floor</option>
+                <option selected>power</option>
+              </select></div>
+            <div><label>Engine floor <span class="help" data-h="engine_floor">?</span></label>
+              <input type="number" id="engine_floor" value="80"></div>
+          </div>
+          <div class="row">
+            <div><label>EDHREC floor × <span class="help" data-h="edhrec_floor">?</span></label>
+              <input type="number" id="edhrec_floor" value="0.75" step="0.05"></div>
+            <div><label>Structural synergy <span class="help" data-h="structural_synergy">?</span></label>
+              <select id="structural_synergy">
+                <option selected>on</option><option>off</option>
+              </select></div>
+            <div><label>Structural floor <span class="help" data-h="structural_floor">?</span></label>
+              <input type="number" id="structural_floor" value="95"></div>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>Advanced — constraints &amp; extras</summary>
+        <div class="inner">
+          <label>Lock cards (comma-separated)
+            <span class="help" data-h="locks">?</span></label>
+          <input type="text" id="locks" placeholder="Sol Ring, Command Tower">
+          <label>Ban cards (comma-separated)
+            <span class="help" data-h="bans">?</span></label>
+          <input type="text" id="bans">
+          <div class="chk"><input type="checkbox" id="budget_exclude_unknown">
+            <span>Budget: exclude unknown prices</span>
+            <span class="help" data-h="budget_exclude_unknown">?</span></div>
+          <label>Game-changers override file
+            <span class="help" data-h="game_changers_file">?</span></label>
+          <input type="text" id="game_changers_file" placeholder="blank = CSV column">
+          <label>Extra CLI flags
+            <span class="help" data-h="extra_flags">?</span></label>
+          <input type="text" id="extra_flags" placeholder="--islands 4 --flavor-tag artifacts">
+        </div>
+      </details>
+
+      <div class="actions">
+        <button id="btnBuild">Build deck</button>
+        <span class="hint">≈ $3–6 in API credits · 20–45 min<br>
+          outputs: <span id="outNames">…</span></span>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:18px">
+        <h2>Database utilities</h2>
+        <div class="chk" style="margin-top:0">
+          <button class="secondary" id="btnRefresh">Refresh card DB</button>
+          <span class="help" data-h="refresh_db">?</span>
+          <span class="hint">rebuild the card CSV from MTGJSON</span>
+        </div>
+        <hr style="border:0;border-top:1px solid var(--border);margin:14px 0">
+        <label style="margin-top:0">Power scan — color scope
+          <span class="help" data-h="power_scan">?</span></label>
+        <div class="colors">
+          <label><input type="checkbox" class="col" value="W">W</label>
+          <label><input type="checkbox" class="col" value="U">U</label>
+          <label><input type="checkbox" class="col" value="B">B</label>
+          <label><input type="checkbox" class="col" value="R">R</label>
+          <label><input type="checkbox" class="col" value="G">G</label>
+          <label><input type="checkbox" id="colorlessOnly" value="C">colorless&nbsp;only</label>
+        </div>
+        <div class="chk"><input type="checkbox" id="scanDry" checked>
+          <span>Dry run (estimate only, spends nothing)</span>
+          <span class="help" data-h="scan_dry">?</span></div>
+        <div class="actions" style="margin-top:8px">
+          <button class="secondary" id="btnScan">Run power scan</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Job console</h2>
+        <div class="status idle" id="status"><span class="dot"></span>
+          <span id="statusText">idle</span><span id="elapsed"></span></div>
+        <div id="doneBanner" style="display:none"></div>
+        <div id="console"></div>
+        <div class="actions">
+          <button class="danger" id="btnCancel" disabled>Cancel job</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ================= OUTPUT TAB ================= -->
+  <div id="tab-output" style="display:none">
+    <div class="grid" style="grid-template-columns:300px 1fr">
+      <div class="card" style="align-self:start">
+        <h2>Artifacts</h2>
+        <table id="outputs"><tbody></tbody></table>
+      </div>
+      <div class="card">
+        <h2>Deck viewer</h2>
+        <div id="deckEmpty" class="loading">No deck loaded — click a deck in
+          Artifacts, or build one.</div>
+        <div id="deckView" style="display:none">
+          <div class="deckhead">
+            <h3 id="deckTitle"></h3>
+            <span class="pill" id="bracketPill" style="display:none"></span>
+            <span class="hint" id="deckMeta"></span>
+            <span class="hint" id="imgStatus" style="display:none">fetching images…</span>
+            <div class="toolbar">
+              <div class="viewtoggle" id="vt">
+                <div id="vtList" class="active">List</div>
+                <div id="vtImages">Images</div>
+              </div>
+              <button class="secondary small" id="btnCopy">Copy list</button>
+              <button class="secondary small" id="btnEdit">Edit</button>
+            </div>
+          </div>
+          <div class="curvewrap"><div id="curve"></div></div>
+          <div class="editbar" id="editbar" style="display:none">
+            <div class="acwrap" style="flex:1;min-width:220px">
+              <input type="text" id="addCard" placeholder="Add a card… (searches your DB)"
+                     autocomplete="off">
+              <div class="acdrop" id="acAdd"></div>
+            </div>
+            <span class="dirty" id="dirtyFlag" style="display:none">unsaved changes</span>
+            <button class="small" id="btnSaveDeck">Save</button>
+            <button class="secondary small" id="btnSaveAs">Save as…</button>
+            <button class="secondary small" id="btnDiscard">Discard</button>
+          </div>
+          <div id="deckBody"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<img id="hoverimg" alt="">
+<div id="tip"></div>
+<div id="toasts"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+/* ================= help texts ================= */
+const HELP = {
+api_key: ["Anthropic API key used by every job started from the GUI. Stored ENCRYPTED (Windows DPAPI — only your Windows user on this machine can decrypt it) in gui_settings.json. A key saved here overrides the ANTHROPIC_API_KEY environment variable. Save an empty box to clear it.", ""],
+commander: ["The commander to build around. Must match the exact card name — the dropdown searches legendary creatures in your card database, so pick from it to be safe.", ""],
+bracket: ["Official Commander Bracket. 1–2: casual — Game Changers banned, no mass land denial, no early two-card combos. 3: upgraded — up to 3 Game Changers. 4: optimized — no list restrictions. 5: cEDH — competitive structural targets (lower curve, 28–32 lands, fast mana, protection) and meta-inclusion recall.", "Default: 4"],
+seed: ["Random seed for the genetic algorithm. Same seed + same settings + same caches = reproducible deck. Leave blank for a different result every run.", "Default: 42"],
+budget: ["Maximum price per card in USD (Scryfall prices). Cards above the cap never enter the pool. Blank = no budget filtering.", "Default: off"],
+generations: ["How many generations the genetic algorithm evolves. It early-stops after 30 generations without improvement, so large values are safe but slow.", "Default: 300"],
+population: ["Deck candidates per GA generation. Bigger explores more but is slower.", "Default: 100"],
+refine: ["LLM refinement rounds after the GA finishes: the model reviews the actual 99 and proposes swaps from the pool. Guarded — swaps can't break role floors, bracket rules, or mechanical legality. 0 disables. v0.9.28: role tags make later rounds effective, so the default rose from 2.", "Default: 3"],
+refine_max_swaps: ["Maximum swaps applied per refinement round.", "Default: 8"],
+recall_edhrec: ["Pulls the commander's EDHREC page into the candidate pool. Additive only — community data is never used to exclude or rank down a card (house philosophy).", "Default: on"],
+recall_embeddings: ["Semantic recall: embeds every card text and pulls the ones most similar to the commander's strategy description. Catches cards no keyword search would find.", "Default: on"],
+recall_patterns: ["Regex/pattern recall driven by the commander analysis (mechanic keywords like 'landfall' or 'lifegain').", "Default: on"],
+recall_edhrec_limit: ["Cap on cards pulled from EDHREC.", "Default: 300"],
+recall_embedding_limit: ["Cap on cards pulled by embedding similarity.", "Default: 1500"],
+recall_pool_cap: ["Hard cap on the merged recall pool (all channels combined).", "Default: 2500"],
+synergy_scoring_mode: ["How per-card synergy is scored. llm = calibrated rubric via the API (best quality, ~30 calls). auto = embedding cosine + hints (fast, nearly free). embedding = cosine only, never calls the LLM.", "GUI default: llm (CLI default: auto)"],
+card_power_mode: ["LLM intrinsic card-power scoring — a commander-independent 'is this card just good?' signal. Globally cached across all runs, so cost shrinks over time. Feeds the power-staples channel, role rescue, and the Power dimension.", "GUI default: llm (CLI default: off)"],
+tournament_model: ["Model for the coarse elimination rounds when filtering role buckets (the highest-volume calls). Haiku is ~3× cheaper than Sonnet; the final pick always uses the main model. Set equal to the main model to disable the split.", "Default: claude-haiku-4-5"],
+model: ["Main model for commander analysis, synergy scoring, combo detection, and refinement.", "Default: claude-sonnet-4-6"],
+synergy_engine_target: ["How many strategy-defining 'engine' cards the dedicated synergy pass selects into the pool. 0 disables the pass.", "Default: 25"],
+synergy_engine_shortlist: ["The synergy pass pre-ranks the pool and only shows the LLM the top N (instead of ~2500).", "Default: 300"],
+synergy_engine_bypass: ["The top N pre-ranked cards skip the LLM entirely and are guaranteed into the GA pool, so the commander's best payoffs can't be filtered away.", "Default: 12"],
+power_staples: ["The top N strongest cards in the global power cache (color-legal, budget-checked) join the pool regardless of role or theme — the taxonomy-independent channel for generically great cards.", "Default: 60"],
+role_power_bypass: ["Per role bucket: the top N by cached power are rescued into the pool even if the selection tournament cut them (safety net for staples like Sol Ring).", "Default: 15"],
+consistency_weight: ["Weight of the effect-class redundancy dimension — rewards having multiple redundant copies of the deck's core effects.", "Default: 0.12"],
+quality_roles: ["Role minimums count cards weighted by their power score, so a weak ramp card doesn't fully satisfy the ramp floor.", "Default: on"],
+combos: ["LLM combo & engine detection (pool scan + knowledge pass + verification). Enables combo-aware fitness and guarantees detected pieces reach the GA pool.", "GUI default: llm (CLI default: off)"],
+combo_weight: ["Weight of the combo dimension in deck fitness.", "Default: 0.12"],
+analysis_cache: ["Persist the commander analysis across runs (v0.9.32). The analysis (strategy, keywords, effect classes) shapes everything downstream — reusing it is the keystone of run-to-run stability. Invalidates automatically when the commander's card text or the analysis prompt changes. Uncheck to force a fresh analysis.", "Default: on"],
+synergy_cache: ["Per-commander cache of LLM synergy scores (v0.9.31). Repeat builds of the same commander reuse prior scores — near-deterministic results and ~30-40 fewer API calls. Invalidates automatically when card text, hint tags, or the scoring rubric change. Uncheck to force a full fresh scoring pass.", "Default: on"],
+signature_pass: ["Extra recall-only pass that names the commander's FAMOUS combos from meta knowledge, so niche pieces (playable only for this deck) enter the pool. Informational — adds data without adding scoring weight.", "Default: on"],
+engine_boost: ["Lifts detected engine cards' synergy so they compete for slots. power = floor at the card's own power score (quality-scaled, recommended). floor = flat value below.", "Default: power"],
+engine_floor: ["The flat synergy floor used when engine boost is set to 'floor'.", "Default: 80"],
+edhrec_floor: ["Boost-only floor: a card's synergy is raised to F × its EDHREC distinctiveness score. Surfaces the community's staple package without punishing unpopular cards. 0 disables.", "Default: 0.75"],
+structural_synergy: ["Attribute-predicate recall for commanders whose payoff is a card PROPERTY text can't see (vanilla creatures, colorless, low curve…). Pulls matching cards in and floors their synergy.", "Default: on"],
+structural_floor: ["Synergy floor for structural-predicate matches. High by design — attribute payoffs score ~0 on text synergy, so the floor must clear the text ceiling.", "Default: 95"],
+locks: ["Cards guaranteed into the final deck. They bypass every filter, including bracket pool filters (audit still reports them).", ""],
+bans: ["Cards excluded from the pool entirely.", ""],
+budget_exclude_unknown: ["With a budget set: also exclude cards whose price is unknown (otherwise they're allowed through).", "Default: off"],
+game_changers_file: ["Override the Game Changer list from a file (JSON array, {\"names\":[…]}, MTGJSON-atomic, or one name per line). Blank = use the isGameChanger column in your card CSV.", "Default: blank"],
+extra_flags: ["Raw CLI flags appended verbatim to the build command — the escape hatch for anything the GUI doesn't expose. The exact command always shows in the console.", ""],
+refresh_db: ["Downloads AtomicCards.json.gz (~30 MB) from MTGJSON and rebuilds your card CSV in place — card texts, legalities, and the official Game Changer flags. Do this when new sets release or the bracket list changes.", ""],
+power_scan: ["Bulk-scores card power into the global cache (feeds power staples + role rescue). Scope by color identity: checked colors = cards whose identity fits inside them (colorless always included). Nothing checked = the whole database. The cache is permanent — a full scan is a one-time cost.", ""],
+scan_dry: ["Dry run prints how many cards are uncached and how many API calls the real scan would make, without spending anything. Uncheck to actually score.", "Default: on"],
+};
+
+/* tooltip engine */
+const tip = $("tip");
+document.addEventListener("mouseover", e => {
+  const h = e.target.closest(".help");
+  if (!h) { tip.style.display = "none"; return; }
+  const [text, def] = HELP[h.dataset.h] || ["(no help)", ""];
+  tip.innerHTML = text + (def ? `<span class="d">${def}</span>` : "");
+  tip.style.display = "block";
+  const r = h.getBoundingClientRect();
+  const w = Math.min(340, innerWidth - 30);
+  let x = Math.min(r.left, innerWidth - w - 14);
+  let y = r.bottom + 8;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+  if (tip.offsetHeight + y > innerHeight - 10)
+    tip.style.top = (r.top - tip.offsetHeight - 8) + "px";
+});
+
+/* toasts */
+function toast(msg, kind = "") {
+  const t = document.createElement("div");
+  t.className = "toast " + kind;
+  t.textContent = msg;
+  $("toasts").appendChild(t);
+  setTimeout(() => t.remove(), kind === "bad" ? 9000 : 5500);
+}
+
+/* ================= form plumbing ================= */
+const NUM = ["bracket","seed","budget","generations","population","refine",
+  "refine_max_swaps","recall_edhrec_limit","recall_embedding_limit",
+  "recall_pool_cap","synergy_engine_target","synergy_engine_shortlist",
+  "synergy_engine_bypass","power_staples","role_power_bypass",
+  "consistency_weight","combo_weight","engine_floor","edhrec_floor",
+  "structural_floor"];
+const TXT = ["commander","tournament_model","model","synergy_scoring_mode",
+  "card_power_mode","combos","engine_boost","structural_synergy","locks",
+  "bans","game_changers_file","extra_flags"];
+const CHK = ["recall_edhrec","recall_embeddings","recall_patterns",
+  "quality_roles","signature_pass","synergy_cache","analysis_cache","budget_exclude_unknown"];
+
+function payload() {
+  const p = {};
+  NUM.forEach(k => { const v = $(k).value; p[k] = v === "" ? null : +v; });
+  TXT.forEach(k => p[k] = $(k).value);
+  CHK.forEach(k => p[k] = $(k).checked);
+  return p;
+}
+function slug(name) {
+  return (name.toLowerCase().replace(/[^a-z0-9]+/g, "_")
+              .replace(/^_+|_+$/g, "")) || "deck";
+}
+$("commander").addEventListener("input", () => {
+  const s = slug($("commander").value);
+  $("outNames").textContent = `${s}_deck.txt · ${s}_deck_report.html`;
+});
+
+async function post(url, body) {
+  const r = await fetch(url, {method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify(body || {})});
+  const j = await r.json();
+  if (!r.ok) toast(j.error || ("HTTP " + r.status), "bad");
+  return {ok: r.ok, ...j};
+}
+
+/* ================= autocomplete ================= */
+function attachAC(inputId, dropId, opts) {
+  const input = $(inputId), drop = $(dropId);
+  let timer = null, results = [], sel = -1;
+  function hide() { drop.style.display = "none"; sel = -1; }
+  function render() {
+    if (!results.length) { hide(); return; }
+    drop.innerHTML = results.map((r, i) =>
+      `<div data-i="${i}" class="${i===sel?'sel':''}">` +
+      `<span>${r.name}</span><span class="t">${r.type}</span></div>`).join("");
+    drop.style.display = "block";
+    [...drop.children].forEach(d => d.onmousedown = e => {
+      e.preventDefault(); pick(+d.dataset.i);
+    });
+  }
+  function pick(i) {
+    if (i < 0 || i >= results.length) return;
+    opts.onPick(results[i]);
+    hide();
+  }
+  input.addEventListener("input", () => {
+    clearTimeout(timer);
+    const q = input.value.trim();
+    if (q.length < 2) { hide(); return; }
+    timer = setTimeout(async () => {
+      const r = await fetch("/api/cards/search?q=" + encodeURIComponent(q)
+        + (opts.commanders ? "&commanders=1" : ""));
+      results = (await r.json()).results || [];
+      sel = -1; render();
+    }, 180);
+  });
+  input.addEventListener("keydown", e => {
+    if (drop.style.display === "none") return;
+    if (e.key === "ArrowDown") { sel = Math.min(sel+1, results.length-1); render(); e.preventDefault(); }
+    else if (e.key === "ArrowUp") { sel = Math.max(sel-1, 0); render(); e.preventDefault(); }
+    else if (e.key === "Enter" && sel >= 0) { pick(sel); e.preventDefault(); }
+    else if (e.key === "Escape") hide();
+  });
+  input.addEventListener("blur", () => setTimeout(hide, 150));
+}
+attachAC("commander", "acCommander", {commanders: true, onPick: r => {
+  $("commander").value = r.name;
+  $("commander").dispatchEvent(new Event("input"));
+}});
+
+/* ================= tabs ================= */
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
+  document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+  t.classList.add("active");
+  $("tab-build").style.display = t.dataset.tab === "build" ? "" : "none";
+  $("tab-output").style.display = t.dataset.tab === "output" ? "" : "none";
+});
+function switchToOutput() { document.querySelector('[data-tab=output]').click(); }
+
+/* ================= api key ================= */
+function renderKey(k) {
+  const pill = $("keyPill");
+  if (k.source === "missing") {
+    pill.textContent = "key: missing"; pill.className = "pill bad";
+  } else {
+    const enc = k.source === "saved" ? (k.encrypted ? " 🔒" : "") : "";
+    pill.textContent = `key: ${k.source} ${k.masked}${enc}`;
+    pill.className = "pill ok";
+  }
+}
+$("btnSaveKey").onclick = async () => {
+  const j = await post("/api/settings", {api_key: $("apiKey").value});
+  if (j.ok) {
+    renderKey(j.api_key); $("apiKey").value = "";
+    toast(j.api_key.source === "missing" ? "API key cleared"
+          : "API key saved (encrypted)", "good");
+  }
+};
+
+/* ================= actions ================= */
+$("btnBuild").onclick = async () => {
+  if (!$("commander").value.trim()) { toast("Enter a commander name", "warn"); return; }
+  const j = await post("/api/build", payload());
+  if (j.ok) toast("Build started — watch the console", "good");
+};
+$("btnRefresh").onclick = async () => {
+  if (!confirm("Download AtomicCards from MTGJSON (~30 MB) and OVERWRITE the "
+               + "card CSV in place?")) return;
+  const j = await post("/api/refresh-cards", {});
+  if (j.ok) toast("Card DB refresh started", "good");
+};
+$("btnScan").onclick = async () => {
+  let colors = [...document.querySelectorAll(".col:checked")]
+               .map(c => c.value).join("");
+  if ($("colorlessOnly").checked) colors = "C";
+  const dry = $("scanDry").checked;
+  if (!dry && !confirm("Run the REAL power scan (spends API credits)?")) return;
+  const j = await post("/api/power-scan", {colors, dry_run: dry, batch_size: 100});
+  if (j.ok) toast(dry ? "Dry-run scan started" : "Power scan started", "good");
+};
+$("btnCancel").onclick = () => {
+  if (confirm("Terminate the running job?")) post("/api/cancel", {});
+};
+
+/* ================= deck viewer / editor ================= */
+let deck = null, deckFile = null, viewMode = "list";
+let editMode = false, editCards = null, dirty = false;
+
+$("vtList").onclick = () => { viewMode = "list"; renderDeck(); };
+$("vtImages").onclick = () => { if (!editMode) { viewMode = "images"; renderDeck(); } };
+
+async function loadDeck(file) {
+  deckFile = file;
+  switchToOutput();
+  editMode = false; dirty = false;
+  $("deckEmpty").style.display = "";
+  $("deckEmpty").textContent = "Loading deck…";
+  $("deckView").style.display = "none";
+  try {
+    // Phase 1: text + metadata only — renders instantly.
+    const r = await fetch("/api/deck?file=" + encodeURIComponent(file)
+                          + "&images=0");
+    if (!r.ok) throw new Error((await r.json()).error);
+    deck = await r.json();
+    $("deckEmpty").style.display = "none";
+    $("deckView").style.display = "";
+    renderDeck();
+    // Phase 2: images resolve in the background (first view of a new deck
+    // hits Scryfall; cached decks come back in <1s) and merge in.
+    $("imgStatus").style.display = "";
+    fetch("/api/deck?file=" + encodeURIComponent(file)).then(async r2 => {
+      if (deckFile !== file) return;      // user moved on to another deck
+      if (r2.ok) {
+        const full = await r2.json();
+        deck.images = full.images || {};
+        renderDeck();
+      }
+      $("imgStatus").style.display = "none";
+    }).catch(() => { $("imgStatus").style.display = "none"; });
+  } catch (e) {
+    $("deckEmpty").textContent = "Could not load deck: " + e.message;
+  }
+}
+
+function img(name, size) {
+  const entry = (deck.images || {})[name];
+  return entry ? entry[size] : null;
+}
+function flatCards() {
+  return deck.sections.flatMap(s => s.cards.map(c => ({...c})));
+}
+
+function renderCurve(cards) {
+  const curve = $("curve");
+  const buckets = [0,0,0,0,0,0,0,0];  // 0..6, 7+
+  for (const c of cards) {
+    if (c.is_land || c.mv === undefined || c.mv === null) continue;
+    buckets[Math.min(7, Math.round(c.mv))] += c.count;
+  }
+  const max = Math.max(1, ...buckets);
+  curve.innerHTML = buckets.map((n, i) =>
+    `<div class="bar" style="height:${Math.max(3, n/max*100)}%">` +
+    `<span>${n || ""}</span><em>${i === 7 ? "7+" : i}</em></div>`).join("");
+}
+
+function renderDeck() {
+  $("vtList").className = viewMode === "list" && !editMode ? "active" : "";
+  $("vtImages").className = viewMode === "images" && !editMode ? "active" : "";
+  $("btnEdit").textContent = editMode ? "Editing…" : "Edit";
+  $("btnEdit").disabled = editMode;
+  $("editbar").style.display = editMode ? "" : "none";
+  $("dirtyFlag").style.display = dirty ? "" : "none";
+  $("deckTitle").textContent = deck.commander || deckFile;
+  const bp = $("bracketPill");
+  if (deck.meta && deck.meta.bracket) {
+    const names = {1:"Exhibition",2:"Core",3:"Upgraded",4:"Optimized",5:"cEDH"};
+    bp.textContent = `Bracket ${deck.meta.bracket} — ${names[deck.meta.bracket] || ""}`;
+    bp.className = "pill ok";
+    bp.style.display = "";
+  } else bp.style.display = "none";
+  const cards = editMode ? editCards : flatCards();
+  const total = cards.reduce((a,c) => a + c.count, 0);
+  const when = (deck.meta && deck.meta.started_at)
+    ? " — built " + new Date(deck.meta.started_at*1000).toLocaleDateString()
+    : "";
+  $("deckMeta").textContent = `${total} cards + commander — ${deckFile}${when}`;
+  renderCurve(cards);
+
+  const body = $("deckBody");
+  body.innerHTML = "";
+  if (editMode) { renderEditor(body); return; }
+
+  const sections = [{name: "Commander",
+                     cards: deck.commander ? [{count:1, name:deck.commander}] : []},
+                    ...deck.sections];
+  for (const sec of sections) {
+    if (!sec.cards.length) continue;
+    const h = document.createElement("div");
+    h.className = "secname";
+    h.textContent = sec.name + " (" +
+      sec.cards.reduce((a,c) => a + c.count, 0) + ")";
+    body.appendChild(h);
+    if (viewMode === "list") {
+      const cols = document.createElement("div");
+      cols.className = "listcols";
+      for (const c of sec.cards) cols.appendChild(listRow(c));
+      body.appendChild(cols);
+    } else {
+      const grid = document.createElement("div");
+      grid.className = "imggrid";
+      for (const c of sec.cards) {
+        const cell = document.createElement("div");
+        cell.className = "cimg";
+        const url = img(c.name, "normal");
+        cell.innerHTML = url
+          ? `<img loading="lazy" src="${url}" alt="${c.name}">`
+          : `<div class="noimg">${c.name}</div>`;
+        if (c.count > 1)
+          cell.innerHTML += `<span class="badge">${c.count}×</span>`;
+        grid.appendChild(cell);
+      }
+      body.appendChild(grid);
+    }
+  }
+}
+
+function hoverPreview(el, name) {
+  const url = img(name, "normal");
+  if (!url) return;
+  el.onmousemove = e => {
+    const h = $("hoverimg");
+    h.src = url; h.style.display = "block";
+    const x = Math.min(e.clientX + 18, innerWidth - 268);
+    const y = Math.min(e.clientY - 60, innerHeight - 370);
+    h.style.left = x + "px"; h.style.top = Math.max(8, y) + "px";
+  };
+  el.onmouseleave = () => $("hoverimg").style.display = "none";
+}
+
+function listRow(c) {
+  const row = document.createElement("div");
+  row.className = "cardrow";
+  const mv = (c.mv !== undefined && c.mv !== null && !c.is_land)
+           ? `<span class="mv">${c.mv}</span>` : "";
+  row.innerHTML = `<span class="ct">${c.count}×</span><span>${c.name}</span>${mv}`;
+  hoverPreview(row, c.name);
+  return row;
+}
+
+/* ---- editor ---- */
+$("btnEdit").onclick = () => {
+  editMode = true; dirty = false;
+  editCards = flatCards();
+  renderDeck();
+};
+$("btnDiscard").onclick = () => {
+  if (dirty && !confirm("Discard unsaved changes?")) return;
+  editMode = false; dirty = false;
+  renderDeck();
+};
+
+function renderEditor(body) {
+  const cols = document.createElement("div");
+  cols.className = "listcols";
+  editCards.forEach((c, i) => {
+    const row = document.createElement("div");
+    row.className = "editrow";
+    row.innerHTML =
+      `<button class="secondary step">−</button>` +
+      `<span class="cnt">${c.count}</span>` +
+      `<button class="secondary step">+</button>` +
+      `<span class="nm">${c.name}</span>` +
+      `<button class="danger step rm">×</button>`;
+    const [minus, , plus, , rm] =
+      [row.children[0], null, row.children[2], null, row.children[4]];
+    minus.onclick = () => { if (c.count > 1) { c.count--; markDirty(); } };
+    plus.onclick = () => { c.count++; markDirty(); };
+    rm.onclick = () => { editCards.splice(i, 1); markDirty(); };
+    hoverPreview(row.children[3], c.name);
+    cols.appendChild(row);
+  });
+  body.appendChild(cols);
+}
+function markDirty() { dirty = true; renderDeck(); }
+
+attachAC("addCard", "acAdd", {commanders: false, onPick: r => {
+  const existing = editCards.find(c => c.name === r.name);
+  if (existing) existing.count++;
+  else editCards.push({count: 1, name: r.name, type: r.type});
+  $("addCard").value = "";
+  markDirty();
+}});
+
+async function doSave(fileName) {
+  const j = await post("/api/deck/save", {
+    file: fileName,
+    commander: deck.commander || "",
+    cards: editCards.map(c => ({count: c.count, name: c.name})),
+  });
+  if (!j.ok) return;
+  (j.warnings || []).forEach(w => toast(w, "warn"));
+  toast("Saved " + fileName + " (previous kept as .bak)", "good");
+  loadDeck(fileName);
+}
+$("btnSaveDeck").onclick = () => doSave(deckFile);
+$("btnSaveAs").onclick = () => {
+  const suggestion = deckFile.replace(/_deck\.txt$/, "_v2_deck.txt");
+  const name = prompt("Save as (must end in _deck.txt):", suggestion);
+  if (!name) return;
+  if (!name.endsWith("_deck.txt")) { toast("Name must end in _deck.txt", "warn"); return; }
+  doSave(name.trim());
+};
+
+$("btnCopy").onclick = async () => {
+  const lines = [];
+  if (deck.commander) lines.push(`1 ${deck.commander}`);
+  for (const c of flatCards()) lines.push(`${c.count} ${c.name}`);
+  await navigator.clipboard.writeText(lines.join("\n"));
+  toast("Decklist copied — paste into Moxfield/Archidekt", "good");
+};
+
+/* ================= artifacts grouping ================= */
+function prettySlug(slug) {
+  return slug.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+}
+function renderOutputs(outputs) {
+  // Group flat {path, kind, slug, mtime} entries: commander -> builds
+  // (a build = artifacts sharing a filename prefix).
+  const groups = {};
+  for (const o of outputs) (groups[o.slug] = groups[o.slug] || []).push(o);
+  const ordered = Object.entries(groups).sort((a, b) =>
+    Math.max(...b[1].map(x => x.mtime)) - Math.max(...a[1].map(x => x.mtime)));
+  let html = "";
+  for (const [slug, items] of ordered) {
+    html += `<tr><td colspan="2" class="gslug">${prettySlug(slug)}</td></tr>`;
+    const byPrefix = {};
+    for (const it of items) {
+      const prefix = it.path
+        .replace(/(_deck\.txt|_deck_report\.html|_build\.log)$/, "");
+      const b = byPrefix[prefix] = byPrefix[prefix] || {mtime: 0};
+      b.mtime = Math.max(b.mtime, it.mtime);
+      b[it.kind] = it.path;
+    }
+    for (const b of Object.values(byPrefix).sort((x,y) => y.mtime - x.mtime)) {
+      const links = [];
+      if (b.deck) links.push(
+        `<a href="#" onclick="loadDeck('${b.deck}');return false"><b>deck</b></a>`);
+      if (b.report) links.push(
+        `<a href="/files/${encodeURIComponent(b.report)}" target="_blank">report</a>`);
+      if (b.log) links.push(
+        `<a href="/files/${encodeURIComponent(b.log)}" target="_blank">log</a>`);
+      const d = new Date(b.mtime * 1000);
+      html += `<tr><td>${links.join(" · ")}</td>` +
+              `<td class="hint" style="text-align:right">` +
+              `${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})}</td></tr>`;
+    }
+  }
+  return html;
+}
+
+/* ================= polling ================= */
+let lastLogLen = -1, lastOutputs = "";
+async function poll() {
+  try {
+    const s = await (await fetch("/api/state")).json();
+    $("csvPath").textContent = s.csv;
+    renderKey(s.api_key);
+    const j = s.job, st = $("status");
+    const cls = j.running ? "running"
+              : (j.returncode === null ? "idle"
+              : (j.returncode === 0 ? "ok" : "fail"));
+    st.className = "status " + cls;
+    $("statusText").textContent = j.running
+      ? (j.label + " — running")
+      : (j.label ? `${j.label} — ${j.returncode === 0 ? "done" : "failed (" + j.returncode + ")"}`
+                 : "idle");
+    if (j.running && j.started_at) {
+      const secs = Math.floor(Date.now()/1000 - j.started_at);
+      $("elapsed").textContent =
+        `${Math.floor(secs/60)}:${String(secs%60).padStart(2,"0")}`;
+    } else $("elapsed").textContent = "";
+    $("btnCancel").disabled = !j.running;
+    ["btnBuild","btnRefresh","btnScan"].forEach(b => $(b).disabled = j.running);
+    // Completion banner + title: a build finishing should be unmissable.
+    const banner = $("doneBanner");
+    if (!j.running && j.returncode !== null && j.label) {
+      const good = j.returncode === 0;
+      banner.className = good ? "good" : "bad";
+      banner.style.display = "";
+      banner.innerHTML =
+        (good ? "✓ " : "✗ ") + j.label +
+        (good ? " — finished" : ` — FAILED (exit ${j.returncode})`) +
+        (good && j.kind === "build" && j.output
+          ? `<button class="small" onclick="loadDeck('${j.output}')">Open deck →</button>`
+          : "");
+      document.title = (good ? "✅ Done" : "❌ Failed") + " — MTG Deck Builder";
+    } else {
+      banner.style.display = "none";
+      document.title = j.running ? "⏳ Building… — MTG Deck Builder"
+                                 : "MTG Deck Builder";
+    }
+    if (j.log.length !== lastLogLen) {
+      lastLogLen = j.log.length;
+      const c = $("console");
+      const atBottom = c.scrollTop + c.clientHeight >= c.scrollHeight - 30;
+      const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+      c.innerHTML = j.log.map(line => {
+        if (/^\[exit code 0\]/.test(line))
+          return `<span class="exit0">${esc(line)} — SUCCESS ✓</span>`;
+        if (/^\[exit code /.test(line))
+          return `<span class="exitbad">${esc(line)} — FAILED ✗</span>`;
+        if (line.startsWith("$ "))
+          return `<span class="cmd">${esc(line)}</span>`;
+        return esc(line);
+      }).join("\n");
+      if (atBottom) c.scrollTop = c.scrollHeight;
+    }
+    const rows = renderOutputs(s.outputs);
+    if (rows !== lastOutputs) {
+      lastOutputs = rows;
+      $("outputs").querySelector("tbody").innerHTML =
+        rows || "<tr><td class='hint'>none yet</td></tr>";
+    }
+  } catch (e) { /* server restarting; keep polling */ }
+  setTimeout(poll, 2000);
+}
+poll();
+</script>
+</body>
+</html>

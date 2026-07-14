@@ -1,0 +1,76 @@
+# ---------------------------------------------------------------------------
+# Secrets / local config  (NEVER commit — gui_settings.json holds the API key)
+# ---------------------------------------------------------------------------
+gui_settings.json
+.env
+.env.*
+
+# ---------------------------------------------------------------------------
+# Card data — regenerable from MTGJSON via `refresh-cards` (see README).
+# Not committed: it's an 11.8 MB MTGJSON-derived dump. test_cards.csv (the
+# small test fixture) IS committed and is not matched by the root-only rule.
+# ---------------------------------------------------------------------------
+/cards.csv
+AtomicCards.json
+AtomicCards.json.gz
+
+# ---------------------------------------------------------------------------
+# Generated caches (all rebuild automatically)
+#
+# EXCEPTION: card_power_cache/ IS committed on purpose — the LLM card-power
+# scores (~32K cards) are expensive to regenerate, small (~1.8 MB), and stay
+# valid against a refresh-cards-rebuilt cards.csv (keyed by card text hash),
+# so shipping them lets the repo run cheaply out of the box.
+# ---------------------------------------------------------------------------
+analysis_cache/
+synergy_cache/
+combo_cache/
+edhrec_cache/
+embedding_cache/
+scryfall_cache/
+tags_cache/
+images_cache/
+bulk_cache/
+web_artifacts/
+
+# ---------------------------------------------------------------------------
+# Build outputs (decks, reports, logs, sidecars)
+# ---------------------------------------------------------------------------
+decks/
+*.log
+*_deck.txt
+*_deck_report.html
+*_meta.json
+*.bak
+# Legacy root-level run artifacts from before the decks/ layout
+/deck.txt
+/deck_*.txt
+/deck_*.html
+/deck_report.html
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+
+# ---------------------------------------------------------------------------
+# Editor / tooling
+# ---------------------------------------------------------------------------
+.vscode/
+.idea/
+.claude/
+*.swp
+.DS_Store

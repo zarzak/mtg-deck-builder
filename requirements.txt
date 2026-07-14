@@ -1,0 +1,21 @@
+# ---------------------------------------------------------------------------
+# Core (required)
+# ---------------------------------------------------------------------------
+anthropic>=0.40.0        # Claude API — commander analysis, synergy/power/combo scoring
+
+# ---------------------------------------------------------------------------
+# Testing
+# ---------------------------------------------------------------------------
+pytest>=7.0.0
+
+# ---------------------------------------------------------------------------
+# Optional — the code degrades gracefully if any of these are missing.
+# ---------------------------------------------------------------------------
+
+# Embedding-based semantic recall (--recall-embeddings). First run downloads a
+# ~25 MB model; results are cached on disk afterward. Pulls in numpy/torch —
+# on Windows prefer a conda env to avoid torch build issues.
+# sentence-transformers>=2.2.0
+
+# The GUI, EDHREC/Scryfall clients, and MTGJSON refresh use only the standard
+# library (urllib, http.server) — no extra packages needed.

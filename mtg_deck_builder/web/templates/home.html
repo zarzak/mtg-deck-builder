@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}MTG Deck Builder{% endblock %}
+{% block content %}
+<h1>MTG Deck Builder</h1>
+<p class="muted">Using card database: <code>{{ csv }}</code></p>
+
+<div class="panel">
+  <h2 style="margin-top:0">Build a deck</h2>
+  <p>Configure commander, weights, and integrations. Submit to kick off a
+    genetic-algorithm optimization; progress streams live.</p>
+  <a href="/build"><button>Build</button></a>
+</div>
+
+<div class="panel">
+  <h2 style="margin-top:0">Diff two decks</h2>
+  <p>Upload two deck-snapshot JSON files (from previous builds or
+    <code>WarmStartDeck.to_dict()</code> exports). Get a styled comparison
+    page.</p>
+  <a href="/diff"><button>Diff</button></a>
+</div>
+
+<div class="panel">
+  <h2 style="margin-top:0">Analyze a commander</h2>
+  <p>Run just the LLM commander-analysis phase without a full build.
+    Useful for quickly checking what the LLM thinks a commander wants.</p>
+  <a href="/analyze"><button>Analyze</button></a>
+</div>
+
+<div class="panel">
+  <h2 style="margin-top:0">Pre-seed tag cache</h2>
+  <p>Fetch Scryfall tags in bulk so subsequent <code>--tags-offline</code>
+    builds have them available.</p>
+  <a href="/tags"><button>Tags</button></a>
+</div>
+{% endblock %}
