@@ -1,5 +1,7 @@
 # MTG Deck Builder — Hybrid LLM + Genetic Algorithm
 
+[![tests](https://github.com/zarzak/mtg-deck-builder/actions/workflows/tests.yml/badge.svg)](https://github.com/zarzak/mtg-deck-builder/actions/workflows/tests.yml)
+
 An automated **Magic: The Gathering Commander (EDH)** deck builder that pairs
 large-language-model card evaluation with a genetic algorithm to assemble and
 optimize 99-card decks around any commander.
@@ -22,6 +24,9 @@ python -m mtg_deck_builder.cli --csv cards.csv build "Jodah, the Unifier" \
 > **Status:** personal project / portfolio piece. 873 passing tests; runs on
 > Python 3.10+. Builds call the Anthropic API and cost roughly **$2–6** each
 > depending on the commander's colors.
+
+**→ See a real build:** [`examples/`](./examples) has a complete decklist and
+scoring report the tool produced for a cEDH stax commander.
 
 ---
 

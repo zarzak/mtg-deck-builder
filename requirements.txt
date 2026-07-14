@@ -2,6 +2,7 @@
 # Core (required)
 # ---------------------------------------------------------------------------
 anthropic>=0.40.0        # Claude API — commander analysis, synergy/power/combo scoring
+numpy>=1.24              # vector math for embedding recall + its test suite
 
 # ---------------------------------------------------------------------------
 # Testing

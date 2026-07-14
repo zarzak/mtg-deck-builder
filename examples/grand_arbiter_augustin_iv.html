@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Grand Arbiter Augustin IV — Deck Build Report</title>
+  <style>
+:root {
+  --bg: #fafafa; --fg: #222; --muted: #666; --accent: #3b6ea5;
+  --card-bg: #fff; --border: #e2e2e2; --good: #3aa35b; --bad: #c0392b;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #1a1a1a; --fg: #eee; --muted: #999; --accent: #6a9ace;
+          --card-bg: #262626; --border: #333; --good: #4cc773; --bad: #e06055; }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5; }
+.container { max-width: 820px; margin: 0 auto; padding: 1rem; }
+h1, h2, h3 { margin-top: 2rem; margin-bottom: 0.5rem; }
+h1 { font-size: 1.6rem; }
+h2 { font-size: 1.3rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3rem; }
+h3 { font-size: 1.05rem; color: var(--accent); }
+.subtitle { color: var(--muted); font-size: 0.9rem; margin-top: -0.5rem; }
+.card { background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+.score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.5rem; }
+.score { padding: 0.5rem; border-radius: 6px; background: var(--bg); text-align: center; }
+.score .label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase;
+  letter-spacing: 0.05em; }
+.score .value { font-size: 1.4rem; font-weight: 600; }
+.score.final { grid-column: 1 / -1; background: var(--accent); color: #fff; }
+.score.final .label { color: rgba(255,255,255,0.8); }
+.bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+.bar-fill { height: 100%; background: var(--accent); transition: width .3s; }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+th, td { padding: 0.4rem 0.6rem; text-align: left; border-bottom: 1px solid var(--border); }
+th { font-weight: 600; color: var(--muted); font-size: 0.8rem; text-transform: uppercase; }
+td.num { text-align: right; font-variant-numeric: tabular-nums; }
+td.prov { font-size: 0.78rem; color: var(--muted); font-family: monospace; }
+.role-pill { display: inline-block; padding: 2px 8px; border-radius: 10px;
+  background: var(--border); font-size: 0.7rem; color: var(--muted); }
+.role-pill.synergy-other { background: #fef3c7; color: #92400e; }
+@media (prefers-color-scheme: dark) {
+  .role-pill.synergy-other { background: #3d3020; color: #e3c77c; }
+}
+/* v0.4: card image support */
+td.card-thumb { width: 70px; padding: 4px; }
+td.card-thumb img { border-radius: 4px; display: block; max-width: 60px; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; }
+.gallery-card { text-align: center; font-size: 0.75rem; }
+.gallery-card img { width: 100%; border-radius: 6px; display: block; margin-bottom: 2px; }
+.gallery-card .cname { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.art-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; }
+.art-strip img { width: 100%; border-radius: 6px; display: block; }
+.art-strip .credit { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+details { margin: 0.5rem 0; }
+summary { cursor: pointer; font-weight: 600; padding: 0.3rem 0; }
+.decklist { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.82rem; background: var(--bg); padding: 1rem; border-radius: 6px;
+  white-space: pre-wrap; overflow-x: auto; }
+.meta { font-size: 0.85rem; color: var(--muted); }
+.meta-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.3rem; }
+.spark { display: inline-block; height: 30px; vertical-align: middle; }
+.review { white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Grand Arbiter Augustin IV — Deck Build Report</h1>
+  <div class="subtitle">99 cards · 263 generations · 1207s total (53.8s GA) · seed=42</div>
+
+  
+
+  <h2>Scores</h2>
+  <div class="card">
+    <div class="score-grid">
+      <div class="score final">  <div class="label">Total</div>  <div class="value">88.8</div>  <div class="bar"><div class="bar-fill" style="width: 88.8%"></div></div></div><div class="score">  <div class="label">Mana Curve</div>  <div class="value">95.1</div>  <div class="bar"><div class="bar-fill" style="width: 95.1%"></div></div></div><div class="score">  <div class="label">Role Coverage</div>  <div class="value">90.7</div>  <div class="bar"><div class="bar-fill" style="width: 90.7%"></div></div></div><div class="score">  <div class="label">Synergy</div>  <div class="value">81.6</div>  <div class="bar"><div class="bar-fill" style="width: 81.6%"></div></div></div><div class="score">  <div class="label">Strategy Density</div>  <div class="value">94.7</div>  <div class="bar"><div class="bar-fill" style="width: 94.7%"></div></div></div><div class="score">  <div class="label">Power Level</div>  <div class="value">80.0</div>  <div class="bar"><div class="bar-fill" style="width: 80.0%"></div></div></div><div class="score">  <div class="label">Consistency</div>  <div class="value">95.7</div>  <div class="bar"><div class="bar-fill" style="width: 95.7%"></div></div></div><div class="score">  <div class="label">Creativity (unscored)</div>  <div class="value">100.0</div>  <div class="bar"><div class="bar-fill" style="width: 100.0%"></div></div></div><div class="score">  <div class="label">Effective Synergy</div>  <div class="value">69.6</div>  <div class="bar"><div class="bar-fill" style="width: 69.6%"></div></div></div><div class="score">  <div class="label">Combos</div>  <div class="value">97.5</div>  <div class="bar"><div class="bar-fill" style="width: 97.5%"></div></div></div>
+    </div>
+    <h3 style="margin-top:1rem;">Best fitness over generations</h3>
+    <svg class="spark" width="200" height="30" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="currentColor" stroke-width="1.5" points="0.0,30.0 1.8,24.8 3.6,24.5 5.4,23.4 7.1,21.5 8.9,19.4 10.7,18.8 12.5,15.8 14.3,14.0 16.1,11.8 17.9,11.6 19.6,10.3 21.4,9.9 23.2,6.6 25.0,6.6 26.8,6.1 28.6,6.1 30.4,5.9 32.1,5.9 33.9,5.3 35.7,4.5 37.5,4.5 39.3,4.5 41.1,4.4 42.9,4.3 44.6,4.2 46.4,4.0 48.2,3.9 50.0,3.7 51.8,3.7 53.6,3.5 55.4,3.2 57.1,3.1 58.9,3.1 60.7,3.1 62.5,3.1 64.3,2.9 66.1,2.9 67.9,2.7 69.6,2.6 71.4,2.5 73.2,2.4 75.0,2.4 76.8,2.0 78.6,2.0 80.4,2.0 82.1,1.8 83.9,1.8 85.7,1.8 87.5,1.8 89.3,1.8 91.1,1.6 92.9,1.5 94.6,1.5 96.4,1.4 98.2,1.4 100.0,1.4 101.8,1.2 103.6,1.2 105.4,1.1 107.1,1.1 108.9,1.1 110.7,1.1 112.5,1.1 114.3,1.1 116.1,1.1 117.9,1.1 119.6,1.1 121.4,1.1 123.2,0.7 125.0,0.7 126.8,0.6 128.6,0.6 130.4,0.6 132.1,0.6 133.9,0.6 135.7,0.5 137.5,0.4 139.3,0.2 141.1,0.2 142.9,0.0 144.6,0.0 146.4,0.0 148.2,0.0 150.0,0.0 151.8,0.0 153.6,0.0 155.4,0.0 157.1,0.0 158.9,0.0 160.7,0.0 162.5,0.0 164.3,0.0 166.1,0.0 167.9,0.0 169.6,0.0 171.4,0.0 173.2,0.0 175.0,0.0 176.8,0.0 178.6,0.0 180.4,0.0 182.1,0.0 183.9,0.0 185.7,0.0 187.5,0.0 189.3,0.0 191.1,0.0 192.9,0.0 194.6,0.0 196.4,0.0 198.2,0.0 200.0,0.0" /></svg>
+  </div>
+
+  
+        <div class="card">
+          <h3>Strategy</h3>
+          <p>Grand Arbiter Augustin IV is the quintessential stax/tax commander, simultaneously reducing your own spell costs while making every opponent spell cost one more mana. The deck aims to layer additional tax effects on top of the commander to create a prison-style lock where opponents cannot function, while you advance your board with discounted spells. Win conditions typically involve grinding opponents out through resource denial or assembling a combo under the protection of the tax shell.</p>
+          <h3>Key Mechanics</h3>
+          <p>cost reduction for white spells, cost reduction for blue spells, tax opponents, stax, control, prison</p>
+          <h3>Synergy Keywords</h3>
+          <p class="meta">spells cost, costs more, costs less, tax, stax, can&#x27;t untap, skip, can&#x27;t cast, counter target spell, proliferate, artifact, enchantment</p>
+          <h3>Evaluation Notes</h3>
+          <p class="meta">Cards that tax or restrict opponents are dramatically elevated in value — even weak or narrow stax pieces become excellent because they stack multiplicatively with the commander. High-CMC spells are better than normal because the cost reduction makes them cheaper, so expensive haymakers are more playable. Counterspells are especially strong since opponents must pay the tax before the counter even fires. Cards that produce incremental advantage over many turns (artifacts, enchantments that generate value) are better than burst-value cards. Mana rocks are highly valued because they accelerate past the tax you impose on yourself. Conversely, cards that rely on opponents doing things (group hug, politics) are anti-synergistic.</p>
+        </div>
+        
+
+  <h2>Role Coverage</h2>
+  <div class="card"><table><thead><tr><th>Role</th><th>Count</th></tr></thead><tbody><tr><td>Draw</td><td class="num">14</td></tr><tr><td>Land</td><td class="num">39</td></tr><tr><td>Protection</td><td class="num">15</td></tr><tr><td>Ramp</td><td class="num">12</td></tr><tr><td>Recursion</td><td class="num">1</td></tr><tr><td>Removal</td><td class="num">5</td></tr><tr><td>Removal_Artifact</td><td class="num">3</td></tr><tr><td>Removal_Creature</td><td class="num">4</td></tr><tr><td>Threat</td><td class="num">3</td></tr><tr><td>Wipe</td><td class="num">3</td></tr></tbody></table></div>
+
+  <h2>Combos</h2><div class="card"><h3 style='margin:0 0 .3rem'>Assembled (17)</h3><table><thead><tr><th>Combo</th><th>Result</th><th>Payoff</th></tr></thead><tbody><tr><td>Grand Arbiter Augustin IV + Stasis</td><td>Opponents pay extra to cast spells; Stasis locks untap steps, you maintain mana advantage</td><td class="num">95</td></tr><tr><td>Grand Arbiter Augustin IV + Winter Orb</td><td>Opponents limited to one land untap and pay extra; you discount through the lock</td><td class="num">90</td></tr><tr><td>Smothering Tithe + Stasis</td><td>Opponents pay to untap or give you Treasures; Stasis prevents untap anyway</td><td class="num">88</td></tr><tr><td>Stasis + Teferi, Time Raveler</td><td>Opponents skip untap, can&#x27;t cast at instant speed; near-total lock</td><td class="num">87</td></tr><tr><td>Teferi, Hero of Dominaria + Stasis</td><td>Opponents locked, you untap lands each turn</td><td class="num">85</td></tr><tr><td>Stasis + Frozen Aether</td><td>Permanents enter tapped, Stasis prevents untap; near-total lock</td><td class="num">85</td></tr><tr><td>Smothering Tithe + Rhystic Study</td><td>Opponents pay for spells or you draw; pay for Tithe or you get Treasures</td><td class="num">85</td></tr><tr><td>Grand Arbiter Augustin IV + Sphere of Resistance</td><td>Opponents pay 2+ extra per spell</td><td class="num">85</td></tr><tr><td>Cyclonic Rift + Stasis</td><td>Bounce all opponent permanents, Stasis prevents rebuilding</td><td class="num">85</td></tr><tr><td>Grand Arbiter Augustin IV + Thalia, Guardian of Thraben</td><td>Opponents pay 2+ extra on noncreature spells</td><td class="num">83</td></tr><tr><td>Lavinia, Azorius Renegade + Trinisphere</td><td>Opponents severely restricted on spell casting</td><td class="num">82</td></tr><tr><td>Linvala, Keeper of Silence + Stasis</td><td>Opponents&#x27; creature abilities shut off; Stasis prevents untap</td><td class="num">80</td></tr><tr><td>Grand Arbiter Augustin IV + Trinisphere</td><td>Severe mana tax on all opponent spells</td><td class="num">80</td></tr><tr><td>Drannith Magistrate + Teferi, Time Raveler</td><td>Opponents can only cast from hand at sorcery speed</td><td class="num">80</td></tr><tr><td>Land Equilibrium + Smothering Tithe</td><td>Opponents can&#x27;t play lands without sacrificing; you gain Treasures</td><td class="num">78</td></tr><tr><td>Grand Arbiter Augustin IV + Aura of Silence</td><td>Opponents pay 3+ extra on artifacts/enchantments</td><td class="num">78</td></tr><tr><td>Propaganda + Smothering Tithe</td><td>Opponents pay to attack or give you Treasures</td><td class="num">75</td></tr></tbody></table><h3 style='margin:.6rem 0 .3rem'>One piece away (67)</h3><table><thead><tr><th>Have</th><th>Missing</th><th>Payoff</th></tr></thead><tbody><tr><td>Teferi, Time Raveler</td><td>+ Knowledge Pool</td><td class="num">95</td></tr><tr><td>Smothering Tithe + Stasis</td><td>+ Forsaken City</td><td class="num">92</td></tr><tr><td>Sensei&#x27;s Divining Top</td><td>+ Counterbalance</td><td class="num">92</td></tr><tr><td>Lavinia, Azorius Renegade</td><td>+ Knowledge Pool</td><td class="num">92</td></tr><tr><td>Grim Monolith</td><td>+ Power Artifact</td><td class="num">92</td></tr><tr><td>Grand Arbiter Augustin IV</td><td>+ Palinchron</td><td class="num">92</td></tr><tr><td>Drannith Magistrate</td><td>+ Knowledge Pool</td><td class="num">92</td></tr><tr><td>Deafening Silence</td><td>+ Knowledge Pool</td><td class="num">91</td></tr><tr><td>Stasis</td><td>+ Teferi, Who Slows the Sunset</td><td class="num">90</td></tr><tr><td>Stasis</td><td>+ Forsaken City</td><td class="num">90</td></tr><tr><td>Smothering Tithe</td><td>+ Windfall</td><td class="num">90</td></tr><tr><td>Rest in Peace</td><td>+ Helm of Obedience</td><td class="num">90</td></tr><tr><td>Drannith Magistrate</td><td>+ Omen Machine</td><td class="num">90</td></tr><tr><td>Winter Orb</td><td>+ Teferi, Who Slows the Sunset</td><td class="num">88</td></tr><tr><td>Winter Orb</td><td>+ Static Orb</td><td class="num">88</td></tr></tbody></table></div>
+
+  
+
+  <h2>Decklist</h2>
+  <div class="card">
+    <div class="decklist">Commander: Grand Arbiter Augustin IV
+
+// Creatures (8)
+1 Archivist of Oghma
+1 Drannith Magistrate
+1 Lavinia, Azorius Renegade
+1 Thalia, Guardian of Thraben
+1 Recruiter of the Guard
+1 Urza, Lord Protector // Urza, Planeswalker
+1 Linvala, Keeper of Silence
+1 Mangara, the Diplomat
+
+// Instants (17)
+1 Pact of Negation
+1 Enlightened Tutor
+1 Mana Tithe
+1 Mental Misstep
+1 Mystical Tutor
+1 Swords to Plowshares
+1 Arcane Denial
+1 Counterspell
+1 Cyclonic Rift
+1 Dovin&#x27;s Veto
+1 Mana Drain
+1 Negate
+1 No More Lies
+1 Fierce Guardianship
+1 Force of Negation
+1 Render Silent
+1 Force of Will
+
+// Sorcerys (1)
+1 Supreme Verdict
+
+// Artifacts (18)
+1 Ancient Den
+1 Chrome Mox
+1 Mox Diamond
+1 Esper Sentinel
+1 Mana Vault
+1 Sensei&#x27;s Divining Top
+1 Sol Ring
+1 Arcane Signet
+1 Azorius Signet
+1 Grim Monolith
+1 Mind Stone
+1 Pearl Medallion
+1 Sphere of Resistance
+1 Talisman of Progress
+1 Winter Orb
+1 Trinisphere
+1 The One Ring
+1 The Mightstone and Weakstone // Urza, Planeswalker
+
+// Enchantments (15)
+1 Urza&#x27;s Saga
+1 Deafening Silence
+1 Land Tax
+1 Mystic Remora
+1 Rest in Peace
+1 Stasis
+1 Aura of Silence
+1 Back to Basics
+1 Propaganda
+1 Rhystic Study
+1 Frozen Aether
+1 Land Equilibrium
+1 Smothering Tithe
+1 Elspeth Conquers Death
+1 Omniscience
+
+// Planeswalkers (3)
+1 Teferi, Time Raveler
+1 Teferi, Hero of Dominaria
+1 Urza, Planeswalker
+
+// Lands (37)
+1 Ancient Tomb
+1 Arid Mesa
+1 Cavern of Souls
+1 Command Tower
+1 Eiganjo, Seat of the Empire
+1 Field of the Dead
+1 Flooded Strand
+1 Gemstone Caverns
+1 Hall of Heliod&#x27;s Generosity
+1 Island
+1 Island
+1 Island
+1 Island
+1 Misty Rainforest
+1 Mystic Gate
+1 Mystic Sanctuary
+1 Nimbus Maze
+1 Otawara, Soaring City
+1 Plains
+1 Plains
+1 Plains
+1 Plains
+1 Plains
+1 Plains
+1 Plains
+1 Reliquary Tower
+1 Sanctum of Eternity
+1 Scalding Tarn
+1 Sea Gate Wreckage
+1 Seachrome Coast
+1 Serra&#x27;s Sanctum
+1 Strip Mine
+1 The Tabernacle at Pendrell Vale
+1 Tundra
+1 Verdant Catacombs
+1 Wasteland
+1 Wooded Foothills
+</div>
+  </div>
+
+  
+        <h2>Bracket Compliance — target 5
+            (cEDH)</h2>
+        <div class="card">
+          <div class="meta-row"><span><b>Game Changers (17/unlimited):</b> The Tabernacle at Pendrell Vale, Ancient Tomb, Serra&#x27;s Sanctum, Field of the Dead, Cyclonic Rift, Smothering Tithe, Enlightened Tutor, Mana Vault, Mystical Tutor, Fierce Guardianship, Force of Will, Chrome Mox, Rhystic Study, Drannith Magistrate, The One Ring, Mox Diamond, Grim Monolith</span></div><div class="meta-row"><span><b>Mass land denial:</b> Back to Basics</span></div><div class="meta-row"><span><b>Two-card combos:</b> Grand Arbiter Augustin IV + Stasis (MV 6) <b>[early]</b>; Grand Arbiter Augustin IV + Winter Orb (MV 6) <b>[early]</b>; Smothering Tithe + Stasis (MV 6) <b>[early]</b>; Stasis + Teferi, Time Raveler (MV 5) <b>[early]</b>; Cyclonic Rift + Stasis (MV 4) <b>[early]</b>; Grand Arbiter Augustin IV + Sphere of Resistance (MV 6) <b>[early]</b>; Smothering Tithe + Rhystic Study (MV 7) <b>[early]</b>; Stasis + Frozen Aether (MV 6) <b>[early]</b>; Teferi, Hero of Dominaria + Stasis (MV 7) <b>[early]</b>; Grand Arbiter Augustin IV + Thalia, Guardian of Thraben (MV 6) <b>[early]</b>; Lavinia, Azorius Renegade + Trinisphere (MV 5) <b>[early]</b>; Drannith Magistrate + Teferi, Time Raveler (MV 5) <b>[early]</b>; Grand Arbiter Augustin IV + Trinisphere (MV 7) <b>[early]</b>; Linvala, Keeper of Silence + Stasis (MV 6) <b>[early]</b>; Grand Arbiter Augustin IV + Aura of Silence (MV 7) <b>[early]</b>; Land Equilibrium + Smothering Tithe (MV 8) <b>[early]</b>; Propaganda + Smothering Tithe (MV 7) <b>[early]</b></span></div>
+          <div class="meta-row"><span><span style="color: var(--good); font-weight: 600;">COMPLIANT with target bracket</span></span></div>
+          <div class="meta-row"><span class="meta">Effective bracket by
+          contents: 4 (4 and 5 are identical by contents; 5 is a metagame declaration)</span></div>
+        </div>
+        
+
+  
+        <h2>LLM Refinement (13 swaps)</h2>
+        <div class="card">
+          <p class="meta">Set-level swaps applied after the GA — redundancy,
+          interaction spread, and role-quality fixes the per-card fitness
+          cannot see.</p>
+          <table><thead><tr><th>Out</th><th>In</th><th>Reason</th></tr></thead>
+          <tbody><tr><td>Prophetic Prism</td><td>Esper Sentinel</td><td class="meta">Esper Sentinel is premier 1-drop draw engine for stax decks.</td></tr><tr><td>Kasmina, Enigmatic Mentor</td><td>Rhystic Study</td><td class="meta">Rhystic Study is the best draw engine for this strategy.</td></tr><tr><td>Glowrider</td><td>Sphere of Resistance</td><td class="meta">Sphere taxes all players including opponents more efficiently.</td></tr><tr><td>Absorb</td><td>Teferi, Time Raveler</td><td class="meta">Teferi restricts opponents to sorcery speed, top-tier stax piece.</td></tr><tr><td>Force Spike</td><td>Winter Orb</td><td class="meta">Winter Orb is a defining stax piece; Force Spike is weakest counterspell.</td></tr><tr><td>Evolving Wilds</td><td>Flooded Strand</td><td class="meta">Flooded Strand fetches untapped dual lands; strictly better.</td></tr><tr><td>Thespian&#x27;s Stage</td><td>Tundra</td><td class="meta">Tundra provides reliable dual mana; Stage has minimal synergy here.</td></tr><tr><td>Karn, Living Legacy</td><td>Grim Monolith</td><td class="meta">Grim Monolith is far superior fast mana; Karn is too slow for cEDH.</td></tr><tr><td>Mana Leak</td><td>Drannith Magistrate</td><td class="meta">Drannith is premier stax piece; Mana Leak is weakest counterspell here.</td></tr><tr><td>Hour of Revelation</td><td>Supreme Verdict</td><td class="meta">Supreme Verdict is cheaper, uncounterable, more reliable wipe.</td></tr><tr><td>Monologue Tax</td><td>Trinisphere</td><td class="meta">Trinisphere is stronger universal tax; Monologue Tax is too conditional.</td></tr><tr><td>Abolish</td><td>Dovin&#x27;s Veto</td><td class="meta">Dovin&#x27;s Veto is unconditional, uncounterable noncreature counter; Abolish is narrow.</td></tr><tr><td>Windfall</td><td>Sensei&#x27;s Divining Top</td><td class="meta">Top is superior draw/filtering; Windfall gives opponents cards, anti-synergy.</td></tr></tbody></table>
+        </div>
+        
+
+  <h2>Per-Card Telemetry</h2>
+  <details open>
+    <summary>99 cards with scoring breakdown</summary>
+    <div class="card"><table><thead><tr><th>Card</th><th>Role</th><th>Baseline</th><th>Synergy</th><th>Effective</th><th>Pool entry</th></tr></thead><tbody><tr><td>Sol Ring</td><td><span class="role-pill ramp">ramp</span></td><td class="num">98</td><td class="num">98</td><td class="num"><b>98</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, role:ramp</td></tr><tr><td>Cyclonic Rift</td><td><span class="role-pill synergy-other">synergy/other</span></td><td class="num">95</td><td class="num">95</td><td class="num"><b>95</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, recall:patterns, combo-onramp</td></tr><tr><td>Mana Drain</td><td><span class="role-pill protection">protection</span></td><td class="num">92</td><td class="num">93</td><td class="num"><b>93</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, recall:embeddings, recall:patterns, role-bypass:protection</td></tr><tr><td>Grim Monolith</td><td><span class="role-pill ramp">ramp</span></td><td class="num">92</td><td class="num">92</td><td class="num"><b>92</b></td><td class="prov">combo-recall, role:ramp</td></tr><tr><td>Rhystic Study</td><td><span class="role-pill draw">draw</span></td><td class="num">90</td><td class="num">92</td><td class="num"><b>91</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, recall:embeddings, recall:patterns, role-bypass:draw</td></tr><tr><td>Force of Will</td><td><span class="role-pill protection">protection</span></td><td class="num">92</td><td class="num">90</td><td class="num"><b>91</b></td><td class="prov">recall:edhrec, recall:embeddings, recall:patterns, role-bypass:protection</td></tr><tr><td>Counterspell</td><td><span class="role-pill protection">protection</span></td><td class="num">88</td><td class="num">92</td><td class="num"><b>91</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, recall:embeddings, recall:patterns, role:protection</td></tr><tr><td>Smothering Tithe</td><td><span class="role-pill draw">draw</span></td><td class="num">90</td><td class="num">90</td><td class="num"><b>90</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, recall:embeddings, role-bypass:draw</td></tr><tr><td>Mystic Remora</td><td><span class="role-pill draw">draw</span></td><td class="num">85</td><td class="num">92</td><td class="num"><b>90</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, recall:embeddings, recall:patterns, role:draw</td></tr><tr><td>Pact of Negation</td><td><span class="role-pill protection">protection</span></td><td class="num">85</td><td class="num">90</td><td class="num"><b>88</b></td><td class="prov">recall:edhrec, recall:embeddings, recall:patterns, role:protection</td></tr><tr><td>Enlightened Tutor</td><td><span class="role-pill synergy-other">synergy/other</span></td><td class="num">88</td><td class="num">88</td><td class="num"><b>88</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, combo-onramp</td></tr><tr><td>Teferi, Hero of Dominaria</td><td><span class="role-pill draw">draw</span></td><td class="num">88</td><td class="num">88</td><td class="num"><b>88</b></td><td class="prov">recall:edhrec, recall:patterns, role-bypass:draw, role-bypass:removal, role-bypass:threats</td></tr><tr><td>Mana Vault</td><td><span class="role-pill ramp">ramp</span></td><td class="num">88</td><td class="num">88</td><td class="num"><b>88</b></td><td class="prov">recall:edhrec, role:ramp</td></tr><tr><td>Teferi, Time Raveler</td><td><span class="role-pill draw">draw</span></td><td class="num">88</td><td class="num">88</td><td class="num"><b>88</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, recall:patterns, role-bypass:draw, role-bypass:threats</td></tr><tr><td>The One Ring</td><td><span class="role-pill draw">draw</span></td><td class="num">88</td><td class="num">88</td><td class="num"><b>88</b></td><td class="prov">recall:edhrec, recall:patterns, role-bypass:draw, role-bypass:protection</td></tr><tr><td>Sphere of Resistance</td><td><span class="role-pill synergy-other">synergy/other</span></td><td class="num">78</td><td class="num">92</td><td class="num"><b>87</b></td><td class="prov">recall:edhrec, recall:embeddings, recall:patterns, engine-bypass</td></tr><tr><td>Winter Orb</td><td><span class="role-pill synergy-other">synergy/other</span></td><td class="num">78</td><td class="num">92</td><td class="num"><b>87</b></td><td class="prov">recall:edhrec, recall:patterns, combo-onramp</td></tr><tr><td>Back to Basics</td><td><span class="role-pill synergy-other">synergy/other</span></td><td class="num">82</td><td class="num">88</td><td class="num"><b>86</b></td><td class="prov">recall:edhrec, recall:patterns, engine-pick</td></tr><tr><td>Urza&#x27;s Saga</td><td><span class="role-pill land">land</span></td><td class="num">92</td><td class="num">82</td><td class="num"><b>86</b></td><td class="prov">recall:edhrec, recall:embeddings, recall:patterns, role:lands</td></tr><tr><td>Linvala, Keeper of Silence</td><td><span class="role-pill synergy-other">synergy/other</span></td><td class="num">85</td><td class="num">85</td><td class="num"><b>85</b></td><td class="prov">recall:edhrec, combo-onramp</td></tr><tr><td>Esper Sentinel</td><td><span class="role-pill draw">draw</span></td><td class="num">85</td><td class="num">85</td><td class="num"><b>85</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, recall:patterns, role-bypass:draw</td></tr><tr><td>Mystical Tutor</td><td><span class="role-pill synergy-other">synergy/other</span></td><td class="num">85</td><td class="num">85</td><td class="num"><b>85</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, combo-onramp</td></tr><tr><td>Force of Negation</td><td><span class="role-pill protection">protection</span></td><td class="num">88</td><td class="num">82</td><td class="num"><b>84</b></td><td class="prov">recall:edhrec, recall:embeddings, role:protection</td></tr><tr><td>Arcane Signet</td><td><span class="role-pill ramp">ramp</span></td><td class="num">85</td><td class="num">82</td><td class="num"><b>83</b></td><td class="prov">recall:edhrec-inclusion-b5, recall:embeddings, role:ramp</td></tr><tr><td>Thalia, Guardian of Thraben</td><td><span class="role-pill synergy-other">synergy/other</span></td><td class="num">78</td><td class="num">85</td><td class="num"><b>83</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, recall:patterns, engine-pick</td></tr><tr><td>Trinisphere</td><td><span class="role-pill synergy-other">synergy/other</span></td><td class="num">72</td><td class="num">88</td><td class="num"><b>82</b></td><td class="prov">recall:edhrec, recall:embeddings, engine-pick</td></tr><tr><td>Lavinia, Azorius Renegade</td><td><span class="role-pill synergy-other">synergy/other</span></td><td class="num">72</td><td class="num">88</td><td class="num"><b>82</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, recall:patterns, combo-onramp</td></tr><tr><td>Stasis</td><td><span class="role-pill synergy-other">synergy/other</span></td><td class="num">72</td><td class="num">88</td><td class="num"><b>82</b></td><td class="prov">recall:edhrec, recall:embeddings, combo-onramp</td></tr><tr><td>Pearl Medallion</td><td><span class="role-pill synergy-other">synergy/other</span></td><td class="num">68</td><td class="num">90</td><td class="num"><b>82</b></td><td class="prov">recall:edhrec, recall:embeddings, engine-pick</td></tr><tr><td>Fierce Guardianship</td><td><span class="role-pill protection">protection</span></td><td class="num">90</td><td class="num">78</td><td class="num"><b>82</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, recall:embeddings, role-bypass:protection</td></tr><tr><td>Mox Diamond</td><td><span class="role-pill ramp">ramp</span></td><td class="num">90</td><td class="num">78</td><td class="num"><b>82</b></td><td class="prov">recall:edhrec, role:ramp</td></tr><tr><td>Land Tax</td><td><span class="role-pill ramp">ramp</span></td><td class="num">82</td><td class="num">82</td><td class="num"><b>82</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, role:ramp</td></tr><tr><td>Urza, Lord Protector // Urza, Planeswalker</td><td><span class="role-pill synergy-other">synergy/other</span></td><td class="num">82</td><td class="num">82</td><td class="num"><b>82</b></td><td class="prov">recall:embeddings, combo-onramp</td></tr><tr><td>Drannith Magistrate</td><td><span class="role-pill synergy-other">synergy/other</span></td><td class="num">82</td><td class="num">82</td><td class="num"><b>82</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, combo-onramp</td></tr><tr><td>Sensei&#x27;s Divining Top</td><td><span class="role-pill draw">draw</span></td><td class="num">82</td><td class="num">82</td><td class="num"><b>82</b></td><td class="prov">recall:edhrec, recall:patterns, role:draw</td></tr><tr><td>No More Lies</td><td><span class="role-pill protection">protection</span></td><td class="num">68</td><td class="num">88</td><td class="num"><b>81</b></td><td class="prov">recall:edhrec, recall:embeddings, recall:patterns, role:protection</td></tr><tr><td>Azorius Signet</td><td><span class="role-pill ramp">ramp</span></td><td class="num">78</td><td class="num">82</td><td class="num"><b>81</b></td><td class="prov">recall:edhrec-inclusion-b5, role:ramp</td></tr><tr><td>Arcane Denial</td><td><span class="role-pill draw">draw</span></td><td class="num">78</td><td class="num">82</td><td class="num"><b>81</b></td><td class="prov">recall:edhrec, recall:embeddings, recall:patterns, role:draw</td></tr><tr><td>Render Silent</td><td><span class="role-pill protection">protection</span></td><td class="num">72</td><td class="num">85</td><td class="num"><b>80</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, recall:patterns, role:protection</td></tr><tr><td>Mangara, the Diplomat</td><td><span class="role-pill draw">draw</span></td><td class="num">80</td><td class="num">80</td><td class="num"><b>80</b></td><td class="prov">recall:patterns, combo-onramp</td></tr><tr><td>Deafening Silence</td><td><span class="role-pill synergy-other">synergy/other</span></td><td class="num">75</td><td class="num">82</td><td class="num"><b>80</b></td><td class="prov">recall:edhrec, recall:embeddings, combo-onramp</td></tr><tr><td>The Tabernacle at Pendrell Vale</td><td><span class="role-pill land">land</span></td><td class="num">82</td><td class="num">78</td><td class="num"><b>79</b></td><td class="prov">recall:edhrec, role:lands</td></tr><tr><td>Mental Misstep</td><td><span class="role-pill protection">protection</span></td><td class="num">72</td><td class="num">82</td><td class="num"><b>78</b></td><td class="prov">recall:edhrec, recall:embeddings, recall:patterns, role:protection</td></tr><tr><td>Archivist of Oghma</td><td><span class="role-pill draw">draw</span></td><td class="num">78</td><td class="num">78</td><td class="num"><b>78</b></td><td class="prov">recall:edhrec, recall:patterns, role:draw</td></tr><tr><td>Chrome Mox</td><td><span class="role-pill ramp">ramp</span></td><td class="num">78</td><td class="num">78</td><td class="num"><b>78</b></td><td class="prov">recall:edhrec, role:ramp</td></tr><tr><td>Aura of Silence</td><td><span class="role-pill removal">removal</span></td><td class="num">70</td><td class="num">82</td><td class="num"><b>78</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, recall:embeddings, role:removal</td></tr><tr><td>Talisman of Progress</td><td><span class="role-pill ramp">ramp</span></td><td class="num">72</td><td class="num">80</td><td class="num"><b>77</b></td><td class="prov">recall:edhrec-inclusion-b5, role:ramp</td></tr><tr><td>Supreme Verdict</td><td><span class="role-pill wipe">wipe</span></td><td class="num">85</td><td class="num">72</td><td class="num"><b>77</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, role:wipe</td></tr><tr><td>Propaganda</td><td><span class="role-pill synergy-other">synergy/other</span></td><td class="num">72</td><td class="num">78</td><td class="num"><b>76</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, recall:embeddings, combo-onramp</td></tr><tr><td>Dovin&#x27;s Veto</td><td><span class="role-pill protection">protection</span></td><td class="num">82</td><td class="num">72</td><td class="num"><b>76</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, role:protection</td></tr><tr><td>Rest in Peace</td><td><span class="role-pill wipe">wipe</span></td><td class="num">82</td><td class="num">72</td><td class="num"><b>76</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, recall:embeddings, role-bypass:wipe</td></tr><tr><td>Frozen Aether</td><td><span class="role-pill synergy-other">synergy/other</span></td><td class="num">62</td><td class="num">82</td><td class="num"><b>75</b></td><td class="prov">recall:edhrec, recall:embeddings, engine-pick</td></tr><tr><td>Mind Stone</td><td><span class="role-pill ramp">ramp</span></td><td class="num">80</td><td class="num">72</td><td class="num"><b>75</b></td><td class="prov">recall:patterns, role:ramp</td></tr><tr><td>Negate</td><td><span class="role-pill protection">protection</span></td><td class="num">72</td><td class="num">75</td><td class="num"><b>74</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, recall:embeddings, role:protection</td></tr><tr><td>Otawara, Soaring City</td><td><span class="role-pill land">land</span></td><td class="num">82</td><td class="num">68</td><td class="num"><b>73</b></td><td class="prov">recall:edhrec, recall:patterns, role:lands</td></tr><tr><td>Mana Tithe</td><td><span class="role-pill protection">protection</span></td><td class="num">55</td><td class="num">80</td><td class="num"><b>71</b></td><td class="prov">recall:embeddings, recall:patterns, role:protection</td></tr><tr><td>Omniscience</td><td><span class="role-pill synergy-other">synergy/other</span></td><td class="num">88</td><td class="num">62</td><td class="num"><b>71</b></td><td class="prov">recall:edhrec, recall:embeddings, engine-bypass</td></tr><tr><td>Urza, Planeswalker</td><td><span class="role-pill draw">draw</span></td><td class="num">88</td><td class="num">62</td><td class="num"><b>71</b></td><td class="prov">role-bypass:draw, role-bypass:threats, role-bypass:protection, role-bypass:wipe</td></tr><tr><td>Elspeth Conquers Death</td><td><span class="role-pill removal">removal</span></td><td class="num">72</td><td class="num">68</td><td class="num"><b>69</b></td><td class="prov">recall:embeddings, recall:patterns, role-bypass:recursion</td></tr><tr><td>Recruiter of the Guard</td><td><span class="role-pill synergy-other">synergy/other</span></td><td class="num">82</td><td class="num">62</td><td class="num"><b>69</b></td><td class="prov">power-staples</td></tr><tr><td>Strip Mine</td><td><span class="role-pill land">land</span></td><td class="num">88</td><td class="num">55</td><td class="num"><b>67</b></td><td class="prov">recall:edhrec, role:lands</td></tr><tr><td>Ancient Tomb</td><td><span class="role-pill land">land</span></td><td class="num">88</td><td class="num">55</td><td class="num"><b>67</b></td><td class="prov">recall:edhrec, role:lands</td></tr><tr><td>Land Equilibrium</td><td><span class="role-pill ramp">ramp</span></td><td class="num">55</td><td class="num">72</td><td class="num"><b>66</b></td><td class="prov">recall:embeddings, combo-onramp</td></tr><tr><td>Wasteland</td><td><span class="role-pill land">land</span></td><td class="num">85</td><td class="num">55</td><td class="num"><b>66</b></td><td class="prov">recall:edhrec, role:lands</td></tr><tr><td>Swords to Plowshares</td><td><span class="role-pill removal">removal</span></td><td class="num">90</td><td class="num">52</td><td class="num"><b>65</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, role:removal</td></tr><tr><td>Command Tower</td><td><span class="role-pill land">land</span></td><td class="num">92</td><td class="num">50</td><td class="num"><b>65</b></td><td class="prov">recall:edhrec-inclusion-b5, recall:embeddings, role:lands</td></tr><tr><td>Serra&#x27;s Sanctum</td><td><span class="role-pill land">land</span></td><td class="num">78</td><td class="num">55</td><td class="num"><b>63</b></td><td class="prov">recall:embeddings, role:lands</td></tr><tr><td>Mystic Sanctuary</td><td><span class="role-pill land">land</span></td><td class="num">72</td><td class="num">58</td><td class="num"><b>63</b></td><td class="prov">recall:edhrec, role:lands</td></tr><tr><td>Mystic Gate</td><td><span class="role-pill land">land</span></td><td class="num">80</td><td class="num">52</td><td class="num"><b>62</b></td><td class="prov">recall:edhrec, role:lands</td></tr><tr><td>Hall of Heliod&#x27;s Generosity</td><td><span class="role-pill land">land</span></td><td class="num">70</td><td class="num">55</td><td class="num"><b>60</b></td><td class="prov">recall:edhrec, role:lands</td></tr><tr><td>Tundra</td><td><span class="role-pill land">land</span></td><td class="num">88</td><td class="num">45</td><td class="num"><b>60</b></td><td class="prov">recall:edhrec, role:lands</td></tr><tr><td>Arid Mesa</td><td><span class="role-pill land">land</span></td><td class="num">88</td><td class="num">42</td><td class="num"><b>58</b></td><td class="prov">recall:edhrec, role:lands</td></tr><tr><td>Flooded Strand</td><td><span class="role-pill land">land</span></td><td class="num">84</td><td class="num">44</td><td class="num"><b>58</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, role:lands</td></tr><tr><td>Seachrome Coast</td><td><span class="role-pill land">land</span></td><td class="num">72</td><td class="num">50</td><td class="num"><b>58</b></td><td class="prov">recall:edhrec, role:lands</td></tr><tr><td>The Mightstone and Weakstone // Urza, Planeswalker</td><td><span class="role-pill ramp">ramp</span></td><td class="num">62</td><td class="num">55</td><td class="num"><b>57</b></td><td class="prov">recall:embeddings, role:removal</td></tr><tr><td>Reliquary Tower</td><td><span class="role-pill land">land</span></td><td class="num">72</td><td class="num">48</td><td class="num"><b>56</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, role:lands</td></tr><tr><td>Gemstone Caverns</td><td><span class="role-pill land">land</span></td><td class="num">72</td><td class="num">48</td><td class="num"><b>56</b></td><td class="prov">recall:edhrec, role:lands</td></tr><tr><td>Misty Rainforest</td><td><span class="role-pill land">land</span></td><td class="num">88</td><td class="num">39</td><td class="num"><b>56</b></td><td class="prov">recall:edhrec, role:lands</td></tr><tr><td>Scalding Tarn</td><td><span class="role-pill land">land</span></td><td class="num">88</td><td class="num">39</td><td class="num"><b>56</b></td><td class="prov">recall:edhrec, role:lands</td></tr><tr><td>Eiganjo, Seat of the Empire</td><td><span class="role-pill land">land</span></td><td class="num">72</td><td class="num">45</td><td class="num"><b>54</b></td><td class="prov">recall:edhrec, role:lands</td></tr><tr><td>Nimbus Maze</td><td><span class="role-pill land">land</span></td><td class="num">65</td><td class="num">48</td><td class="num"><b>54</b></td><td class="prov">recall:edhrec, role:lands</td></tr><tr><td>Sanctum of Eternity</td><td><span class="role-pill land">land</span></td><td class="num">70</td><td class="num">42</td><td class="num"><b>52</b></td><td class="prov">role:lands</td></tr><tr><td>Ancient Den</td><td><span class="role-pill land">land</span></td><td class="num">55</td><td class="num">40</td><td class="num"><b>45</b></td><td class="prov">role:lands</td></tr><tr><td>Sea Gate Wreckage</td><td><span class="role-pill land">land</span></td><td class="num">55</td><td class="num">38</td><td class="num"><b>44</b></td><td class="prov">role:lands</td></tr><tr><td>Plains</td><td><span class="role-pill land">land</span></td><td class="num">30</td><td class="num">45</td><td class="num"><b>40</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, role:lands</td></tr><tr><td>Plains</td><td><span class="role-pill land">land</span></td><td class="num">30</td><td class="num">45</td><td class="num"><b>40</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, role:lands</td></tr><tr><td>Island</td><td><span class="role-pill land">land</span></td><td class="num">30</td><td class="num">45</td><td class="num"><b>40</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, role:lands</td></tr><tr><td>Island</td><td><span class="role-pill land">land</span></td><td class="num">30</td><td class="num">45</td><td class="num"><b>40</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, role:lands</td></tr><tr><td>Island</td><td><span class="role-pill land">land</span></td><td class="num">30</td><td class="num">45</td><td class="num"><b>40</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, role:lands</td></tr><tr><td>Plains</td><td><span class="role-pill land">land</span></td><td class="num">30</td><td class="num">45</td><td class="num"><b>40</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, role:lands</td></tr><tr><td>Plains</td><td><span class="role-pill land">land</span></td><td class="num">30</td><td class="num">45</td><td class="num"><b>40</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, role:lands</td></tr><tr><td>Plains</td><td><span class="role-pill land">land</span></td><td class="num">30</td><td class="num">45</td><td class="num"><b>40</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, role:lands</td></tr><tr><td>Plains</td><td><span class="role-pill land">land</span></td><td class="num">30</td><td class="num">45</td><td class="num"><b>40</b></td><td class="prov">recall:edhrec, recall:edhrec-inclusion-b5, role:lands</td></tr><tr><td>Field of the Dead</td><td><span class="role-pill land">land</span></td><td class="num">85</td><td class="num">12</td><td class="num"><b>38</b></td><td class="prov">role-bypass:lands</td></tr><tr><td>Cavern of Souls</td><td><span class="role-pill land">land</span></td><td class="num">85</td><td class="num">10</td><td class="num"><b>36</b></td><td class="prov">role-bypass:lands</td></tr><tr><td>Verdant Catacombs</td><td><span class="role-pill land">land</span></td><td class="num">84</td><td class="num">10</td><td class="num"><b>36</b></td><td class="prov">power-staples</td></tr><tr><td>Wooded Foothills</td><td><span class="role-pill land">land</span></td><td class="num">88</td><td class="num">5</td><td class="num"><b>34</b></td><td class="prov">role-bypass:lands</td></tr><tr><td>Snow-Covered Island</td><td><span class="role-pill land">land</span></td><td class="num">32</td><td class="num">20</td><td class="num"><b>24</b></td><td class="prov">role:lands</td></tr><tr><td>Snow-Covered Plains</td><td><span class="role-pill land">land</span></td><td class="num">30</td><td class="num">20</td><td class="num"><b>24</b></td><td class="prov">role:lands</td></tr></tbody></table></div>
+  </details>
+
+  
+
+  
+    <h2>Configuration</h2>
+    <details>
+      <summary>Build settings</summary>
+      <div class="card">
+        <div class="meta-row"><span><b>Population</b> 100</span>
+            <span><b>Generations</b> 300</span>
+            <span><b>Bracket</b> 5</span></div>
+        <div class="meta-row"><span><b>Scoring weights:</b> mana_curve=0.10, role_coverage=0.10, synergy=0.35, strategy_density=0.25, power_level=0.25, combo=0.18, consistency=0.12</span></div>
+        <div class="meta-row"><span><b>Synergy balance:</b>
+            baseline=0.35, synergy=0.65</span></div>
+        <div class="meta-row"><span><b>Model:</b> claude-sonnet-4-6</span></div>
+      </div>
+    </details>
+    
+
+  <div style="text-align:center; color: var(--muted); font-size: 0.75rem;
+              margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+    Generated by mtg_deck_builder v0.9.33
+  </div>
+</div>
+</body>
+</html>
