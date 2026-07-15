@@ -215,7 +215,7 @@ caches, and the GUI's server/argument layer.
 ## How this was built
 
 This project is a **human-architected, AI-implemented** collaboration. I
-(Brian Klein) designed the system and directed the work; the code itself was
+designed the system and directed the work; the code itself was
 written by **[Claude](https://www.anthropic.com/claude)** (Anthropic's models,
 via Claude Code) under that direction.
 
@@ -230,10 +230,9 @@ Concretely, the human side was the engineering that *isn't* typing code:
   worse implementations.
 - **Empirical direction** — dozens of real build cycles where I reviewed the
   output, root-caused what the engine got wrong (a missing staple, a dropped
-  combo, a mis-scored dimension), and decided the fix — the loop that turned a
-  working prototype into a tuned one.
+  combo, a mis-scored dimension), and decided the fix.
 
-I'm sharing it partly as a working tool and partly as an example of what
+I'm sharing this partly as a working tool and partly as an example of what
 directing an AI to build a non-trivial system looks like when the human owns
 the architecture, the design decisions, and the review.
 
