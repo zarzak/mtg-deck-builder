@@ -21,9 +21,9 @@ python -m mtg_deck_builder.cli --csv cards.csv build "Jodah, the Unifier" \
     --report jodah.html --output jodah.txt
 ```
 
-> **Status:** personal project / portfolio piece. 807 passing tests; runs on
-> Python 3.10+. Builds call the Anthropic API and cost roughly **$2–6** each
-> depending on the commander's colors.
+> **Status:** personal project / portfolio piece. 807 passing tests; CI runs
+> on Python 3.11–3.13. Builds call the Anthropic API and cost roughly
+> **$2–6** each depending on the commander's colors.
 
 **→ See a real build:** [`examples/`](./examples) has a complete decklist and
 scoring report the tool produced for a cEDH stax commander.

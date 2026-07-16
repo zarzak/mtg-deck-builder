@@ -1,9 +1,13 @@
 """
-MTG Deck Builder - Hybrid AI + Genetic Algorithm EDH Deck Builder
+MTG Deck Builder - Hybrid LLM + Genetic Algorithm EDH Deck Builder
 
-The current version is in ``__version__`` below. Recent work (v0.9.x) added the
-LLM card-power signal, combo/engine detection, structural/attribute synergy
-(commander-effect-aware), and the EDHREC distinctive-synergy floor.
+The current version is in ``__version__`` below. Pipeline overview: LLM
+commander analysis -> layered candidate recall (EDHREC / embeddings /
+patterns / structural predicates) -> LLM synergy + card-power scoring ->
+combo/engine detection (database + LLM + memory) -> GA optimization ->
+LLM refinement -> Commander Bracket (1-5) audit. All LLM judgments are
+disk-cached per commander for cost and run-to-run stability. See README.md
+for the full architecture.
 """
 
 from .models import (

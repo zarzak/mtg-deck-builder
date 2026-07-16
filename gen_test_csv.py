@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
-"""Generate a clean test CSV for MTG deck builder testing."""
+"""Generate the unit-test card fixture (test_cards.csv).
 
-# Each row is a tuple of 17 fields matching the header order.
-# Use 'NL' as placeholder for newlines within text fields; we'll convert
-# to literal backslash-n when writing.
+Writes next to this script. The isGameChanger column is appended
+automatically from the GAME_CHANGERS set below — keep that set in sync with
+the bracket tests if you add/remove flagged cards.
+"""
+
+from pathlib import Path
+
+# Each row is a tuple of 17 fields matching the header order (isGameChanger
+# is appended at write time). Use 'NL' as placeholder for newlines within
+# text fields; we'll convert to literal backslash-n when writing.
 NL = "\\n"
 
 rows = [
@@ -326,11 +333,27 @@ rows = [
     ("Cryptolith Rite", "{1}{G}", "2", "Enchantment",
      'Creatures you control have "{T}: Add one mana of any color."',
      "G", "G", "", "", "", "", "Enchantment", "", "", "", "normal", "commander"),
+
+    # v0.9.9 structural-synergy tests (vanilla-matters payoffs)
+    ("Muraganda Petroglyphs", "{2}{G}", "3", "Enchantment",
+     "Creatures with no abilities get +2/+2.",
+     "G", "G", "", "", "", "", "Enchantment", "", "", "", "normal", "commander"),
+
+    ("Ruxa, Patient Professor", "{2}{G}{G}", "4", "Legendary Creature - Bear Druid",
+     f"Whenever Ruxa, Patient Professor enters or attacks, return target creature card with no abilities from your graveyard to your hand.{NL}Creatures you control with no abilities get +1/+1.",
+     "G", "G", "4", "4", "", "", "Creature", "Bear,Druid", "Legendary", "", "normal", "commander"),
 ]
 
 HEADERS = ["name", "manaCost", "manaValue", "type", "text", "colorIdentity",
            "colors", "power", "toughness", "loyalty", "defense", "types",
-           "subtypes", "supertypes", "keywords", "layout", "legalities"]
+           "subtypes", "supertypes", "keywords", "layout", "legalities",
+           "isGameChanger"]
+
+# v0.9.18+: the fixture carries the official Game Changer flag (the bracket
+# tests depend on these three being marked). Everything else emits "false".
+GAME_CHANGERS = {"Smothering Tithe", "Enlightened Tutor", "Teferi's Protection"}
+
+OUTPUT = Path(__file__).parent / "test_cards.csv"
 
 
 def main():
@@ -340,17 +363,19 @@ def main():
     out.append("|".join(HEADERS))
 
     for row in rows:
-        assert len(row) == len(HEADERS), f"Row has {len(row)} fields, expected {len(HEADERS)}: {row[0]}"
+        assert len(row) == len(HEADERS) - 1, \
+            f"Row has {len(row)} fields, expected {len(HEADERS) - 1}: {row[0]}"
         # Check no field contains actual newlines or pipes
         for i, field in enumerate(row):
             assert '\n' not in field, f"Actual newline in field {i} of {row[0]!r}"
             assert '|' not in field, f"Pipe in field {i} of {row[0]!r}"
-        out.append("|".join(row))
+        gc = "true" if row[0] in GAME_CHANGERS else "false"
+        out.append("|".join(row) + "|" + gc)
 
     content = "\n".join(out) + "\n"
-    with open("/home/claude/test_cards.csv", "w", encoding="utf-8") as f:
+    with open(OUTPUT, "w", encoding="utf-8") as f:
         f.write(content)
-    print(f"Wrote {len(rows)} rows")
+    print(f"Wrote {len(rows)} rows to {OUTPUT}")
 
 
 if __name__ == "__main__":

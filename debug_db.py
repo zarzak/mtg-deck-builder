@@ -6,7 +6,6 @@ Run with: python debug_db.py cards.csv
 
 import sys
 import csv
-from pathlib import Path
 from io import StringIO
 
 
