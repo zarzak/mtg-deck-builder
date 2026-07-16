@@ -435,6 +435,36 @@ class DeckBuilder:
         # telemetry. Done last so it survives refinement's telemetry rebuild.
         self._attach_provenance(result)
 
+        # v0.9.34 (#36): card-centric upgrade suggestions from the combos
+        # the final deck came ONE card short of.
+        try:
+            self._compute_upgrade_suggestions(result)
+        except Exception as e:
+            logger.warning(f"Upgrade-suggestion pass failed: {e}")
+
+        # v0.9.34 (#35): goldfish the final deck — pure local Monte Carlo
+        # (no LLM, ~1s). Measures the consistency questions the static
+        # score can't: keepable hands, land curve, commander cast turn,
+        # combo-drawn odds.
+        if result.best_deck is not None and result.best_deck.cards:
+            try:
+                from .goldfish import GoldfishConfig, simulate
+                gf = simulate(
+                    result.best_deck.cards,
+                    result.best_deck.commander or self._commander,
+                    combos=self._reward_combos or None,
+                    config=GoldfishConfig(seed=self.config.random_seed),
+                )
+                result.goldfish = gf.to_dict()
+                logger.info(
+                    f"Goldfish ({gf.trials} games): keep7 "
+                    f"{gf.keep7_rate:.0%}, avg commander turn "
+                    f"{gf.avg_commander_turn:.1f}, t3 lands "
+                    f"{gf.avg_lands_by_turn.get(3, 0):.1f}"
+                )
+            except Exception as e:
+                logger.warning(f"Goldfish simulation failed: {e}")
+
         # v0.9.16c: log the prompt-cache efficiency summary for the build.
         try:
             summary = self.llm.cache_summary()
@@ -446,6 +476,89 @@ class DeckBuilder:
         self._report_progress("done", "complete", 1.0,
                               f"Complete! Score: {result.final_score:.1f}")
         return result
+
+    def _compute_upgrade_suggestions(self, result, cap: int = 10) -> None:
+        """v0.9.34 (#36): single cards that would complete detected combos.
+
+        Card-centric (the actionable view): "add X -> completes A + B" rather
+        than a per-combo listing. Sources from _reward_combos so bracket-
+        BANNED combos are never suggested (recommending a banned pair's
+        missing piece at brackets 1-3 would be advising a rules violation).
+        Suggested cards must exist in the DB, fit the commander's color
+        identity, and clear the per-card budget cap when one is set —
+        a suggestion the user can't legally/afford to add isn't one.
+        """
+        deck = result.best_deck
+        if deck is None or not deck.cards or not self._reward_combos:
+            return
+        present_names = {c.name for c in deck.cards}
+        if deck.commander is not None:
+            present_names.add(deck.commander.name)
+
+        commander_colors = set(
+            ch for ch in (self._commander.color_identity or "")
+            if ch in "WUBRG"
+        ) if self._commander else set()
+
+        by_card: dict[str, list[dict]] = {}
+        for combo in self._reward_combos:
+            cards = list(getattr(combo, "cards", []) or [])
+            if len(cards) < 2:
+                continue
+            missing = [c for c in cards if c not in present_names]
+            if len(missing) != 1:
+                continue  # assembled, or more than one piece away
+            name = missing[0]
+            by_card.setdefault(name, []).append({
+                "with": [c for c in cards if c in present_names],
+                "result": getattr(combo, "result", "") or "",
+                "payoff": int(getattr(combo, "payoff", 0)),
+            })
+
+        suggestions = []
+        for name, completes in by_card.items():
+            card = self.db.get_by_name(name)
+            if card is None:
+                continue  # hallucinated / not in this DB
+            card_colors = set(
+                ch for ch in (card.color_identity or "") if ch in "WUBRG"
+            )
+            if not card_colors.issubset(commander_colors):
+                continue
+            if self._card_over_budget(card):
+                continue
+            completes.sort(key=lambda d: -d["payoff"])
+            suggestions.append({
+                "card": name,
+                "best_payoff": completes[0]["payoff"],
+                "completes": completes,
+            })
+
+        suggestions.sort(key=lambda s: (-s["best_payoff"],
+                                        -len(s["completes"]), s["card"]))
+        result.upgrade_suggestions = suggestions[:cap]
+        if result.upgrade_suggestions:
+            top = result.upgrade_suggestions[0]
+            logger.info(
+                f"Upgrade suggestions: {len(result.upgrade_suggestions)} "
+                f"single-card combo completions (top: {top['card']} -> "
+                f"payoff {top['best_payoff']})"
+            )
+
+    def _card_over_budget(self, card) -> bool:
+        """True when a per-card budget cap is set and this card exceeds it
+        (unknown prices pass unless budget_exclude_unknown)."""
+        cap = self.config.budget_max_per_card
+        if cap is None:
+            return False
+        try:
+            price = (self._price_source.get_price(card.name)
+                     if self._price_source else None)
+        except Exception:
+            price = None
+        if price is None:
+            return bool(getattr(self.config, "budget_exclude_unknown", False))
+        return price > cap
 
     def _attach_provenance(self, result) -> None:
         """v0.9.33 (#26): copy each card's pool-entry channels onto its

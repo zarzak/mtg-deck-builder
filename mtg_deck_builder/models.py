@@ -1084,6 +1084,16 @@ class OptimizationResult:
     # EVERY card that entered the GA pool, not just the final 99 — lets us
     # answer "why is card X missing" (it never entered, or via which channel).
     pool_provenance: dict = field(default_factory=dict)
+    # v0.9.34 (#36): card-centric upgrade suggestions — single cards that
+    # would each complete one or more detected (bracket-legal) combos the
+    # final deck is one piece away from. Each entry:
+    # {"card": name, "best_payoff": int,
+    #  "completes": [{"with": [present...], "result": str, "payoff": int}]}
+    upgrade_suggestions: list = field(default_factory=list)
+    # v0.9.34 (#35): goldfish-simulation results for the final deck
+    # (GoldfishReport.to_dict() — keepable-hand rate, land curve, commander
+    # cast turn, combo-drawn odds). None when the simulation didn't run.
+    goldfish: Optional[dict] = None
 
     # NEW v0.6: Optional role validation diagnostic
     # Typed as Any in-annotation to avoid circular imports; this is a

@@ -21,7 +21,7 @@ python -m mtg_deck_builder.cli --csv cards.csv build "Jodah, the Unifier" \
     --report jodah.html --output jodah.txt
 ```
 
-> **Status:** personal project / portfolio piece. 807 passing tests; CI runs
+> **Status:** personal project / portfolio piece. 830 passing tests; CI runs
 > on Python 3.11–3.13. Builds call the Anthropic API and cost roughly
 > **$2–6** each depending on the commander's colors.
 
@@ -185,6 +185,7 @@ A few deliberate constraints shaped the engine (and are enforced by tests):
 | Command         | What it does                                                        |
 | --------------- | ------------------------------------------------------------------- |
 | `build`         | Full pipeline: analysis → recall → scoring → GA → refinement        |
+| `goldfish`      | Monte-Carlo playtest a decklist: hands, land curve, combo odds      |
 | `gui`           | Launch the local web GUI (build, view decks with images, edit)      |
 | `refresh-cards` | Download MTGJSON AtomicCards and (re)build `cards.csv`               |
 | `power-scan`    | Bulk-score card power into the global cache                         |
@@ -203,7 +204,7 @@ trying the machinery without a key.
 ## Testing
 
 ```bash
-python -m pytest mtg_deck_builder/tests -q      # 807 tests
+python -m pytest mtg_deck_builder/tests -q      # 830 tests
 ```
 
 The suite runs entirely offline (mock LLM, local fixture `test_cards.csv`) and

@@ -490,11 +490,13 @@
                 <div id="vtList" class="active">List</div>
                 <div id="vtImages">Images</div>
               </div>
+              <button class="secondary small" id="btnGoldfish">Goldfish</button>
               <button class="secondary small" id="btnCopy">Copy list</button>
               <button class="secondary small" id="btnEdit">Edit</button>
             </div>
           </div>
           <div class="curvewrap"><div id="curve"></div></div>
+          <div id="gfPanel" class="editbar" style="display:none"></div>
           <div class="editbar" id="editbar" style="display:none">
             <div class="acwrap" style="flex:1;min-width:220px">
               <input type="text" id="addCard" placeholder="Add a card… (searches your DB)"
@@ -741,6 +743,7 @@ async function loadDeck(file) {
   deckFile = file;
   switchToOutput();
   editMode = false; dirty = false;
+  $("gfPanel").style.display = "none";
   $("deckEmpty").style.display = "";
   $("deckEmpty").textContent = "Loading deck…";
   $("deckView").style.display = "none";
@@ -939,6 +942,33 @@ $("btnSaveAs").onclick = () => {
   doSave(name.trim());
 };
 
+$("btnGoldfish").onclick = async () => {
+  const panel = $("gfPanel");
+  panel.style.display = "";
+  panel.textContent = "Simulating 500 games… (local, no API cost)";
+  try {
+    const r = await fetch("/api/goldfish?file=" + encodeURIComponent(deckFile));
+    const g = await r.json();
+    if (!r.ok) throw new Error(g.error);
+    const lands = g.avg_lands_by_turn || {};
+    const cast = g.commander_cast_by_turn || {};
+    const combo = g.any_combo_drawn_by_turn || {};
+    const pct = v => Math.round((v || 0) * 100) + "%";
+    let html_ = `<b>Goldfish (${g.trials} games):</b>&nbsp; ` +
+      `keepable 7: <b>${pct(g.keep7_rate)}</b> · ` +
+      `lands t3: <b>${(lands[3] ?? lands["3"] ?? 0).toFixed(1)}</b> · ` +
+      `land-screw by t3: ${pct(g.missed_drop_by_t3_rate)} · ` +
+      `commander: avg t<b>${(g.avg_commander_turn || 0).toFixed(1)}</b> ` +
+      `(by t4: ${pct(cast[4] ?? cast["4"])})`;
+    if (Object.keys(combo).length)
+      html_ += ` · combo drawn by t6: <b>${pct(combo[6] ?? combo["6"])}</b>`;
+    if (g.skipped_cards) html_ += ` <span class="hint">(${g.skipped_cards} unknown cards skipped)</span>`;
+    panel.innerHTML = html_;
+  } catch (e) {
+    panel.style.display = "none";
+    toast("Goldfish failed: " + e.message, "bad");
+  }
+};
 $("btnCopy").onclick = async () => {
   const lines = [];
   if (deck.commander) lines.push(`1 ${deck.commander}`);

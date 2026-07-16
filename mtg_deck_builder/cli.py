@@ -483,6 +483,21 @@ def cmd_build(args):
 
     # Output decklist
     decklist = result.best_deck.to_decklist()
+    # v0.9.34 (#36): upgrade suggestions travel with the decklist as
+    # comment lines ('#' prefix — ignored by the GUI's deck parser, so the
+    # 99-count stays honest).
+    suggestions = getattr(result, "upgrade_suggestions", None) or []
+    if suggestions:
+        lines = ["", "# ---- Upgrade suggestions (one card completes a "
+                     "detected combo) ----"]
+        for s in suggestions:
+            best = s["completes"][0]
+            lines.append(
+                f"# Consider: {s['card']} — completes "
+                f"{' + '.join(best['with'])} + {s['card']} "
+                f"(payoff {best['payoff']})"
+            )
+        decklist = decklist.rstrip("\n") + "\n" + "\n".join(lines) + "\n"
     if args.output:
         Path(args.output).write_text(decklist, encoding="utf-8")
         print(f"\nDecklist written to {args.output}")
@@ -703,6 +718,66 @@ def cmd_stats(args):
         result = db.query(color_identity=c)
         print(f"  {label:15s}: {result.total_matches}")
 
+    return 0
+
+
+def cmd_goldfish(args):
+    """v0.9.34 (#35): goldfish an existing decklist file — Monte-Carlo
+    opening hands, land curve, commander cast turn, combo-drawn odds.
+    Pure local simulation: no API calls, no cost."""
+    from .goldfish import GoldfishConfig, simulate
+    from .gui import parse_decklist
+
+    deck_path = Path(args.deckfile)
+    if not deck_path.is_file():
+        print(f"Deck file not found: {args.deckfile}", file=sys.stderr)
+        return 1
+    parsed = parse_decklist(deck_path)
+    if not parsed.get("commander"):
+        print("Deck file has no 'Commander:' line.", file=sys.stderr)
+        return 1
+
+    db = CardDatabase(args.csv)
+    db.load()
+    commander = db.get_by_name(parsed["commander"])
+    if commander is None:
+        print(f"Commander not in DB: {parsed['commander']}", file=sys.stderr)
+        return 1
+
+    cards, missing = [], []
+    for section in parsed["sections"]:
+        for entry in section["cards"]:
+            card = db.get_by_name(entry["name"])
+            if card is None:
+                missing.append(entry["name"])
+                continue
+            cards.extend([card] * entry["count"])
+    if missing:
+        print(f"warning: {len(missing)} card(s) not in DB, skipped: "
+              f"{', '.join(missing[:5])}", file=sys.stderr)
+
+    # Combos are optional: reuse the commander's combo cache when present.
+    combos = None
+    try:
+        import json as _json
+        import re as _re
+        slug = _re.sub(r"[^A-Za-z0-9._-]", "_",
+                       f"{commander.name}_{args.combo_model}")
+        cache_file = Path(args.combo_cache_dir) / f"combos_{slug}.json"
+        if cache_file.is_file():
+            from .models import Combo
+            data = _json.loads(cache_file.read_text(encoding="utf-8"))
+            combos = [Combo(**c) for c in data.get("combos", [])]
+            print(f"(using {len(combos)} cached combos for combo-odds)")
+    except Exception as e:
+        print(f"warning: combo cache unavailable ({e})", file=sys.stderr)
+
+    report = simulate(cards, commander, combos=combos,
+                      config=GoldfishConfig(trials=args.trials,
+                                            turns=args.turns,
+                                            seed=args.seed))
+    print()
+    print(report.to_text())
     return 0
 
 
@@ -1265,6 +1340,20 @@ def main(argv=None):
     # stats
     stats_p = subparsers.add_parser("stats", help="Database statistics")
     stats_p.set_defaults(func=cmd_stats)
+
+    # v0.9.34 (#35): goldfish an existing decklist
+    gf_p = subparsers.add_parser(
+        "goldfish",
+        help="Monte-Carlo playtest a decklist file: keepable hands, land "
+             "curve, commander cast turn, combo odds (no API calls)")
+    gf_p.add_argument("deckfile", help="A *_deck.txt produced by build")
+    gf_p.add_argument("--trials", type=int, default=1000)
+    gf_p.add_argument("--turns", type=int, default=6)
+    gf_p.add_argument("--seed", type=int, default=42)
+    gf_p.add_argument("--combo-model", default="claude-sonnet-4-6",
+                      help="Which model's combo cache to read for combo odds")
+    gf_p.add_argument("--combo-cache-dir", default="./combo_cache")
+    gf_p.set_defaults(func=cmd_goldfish)
 
     # v0.9.20: local web GUI
     gui_p = subparsers.add_parser(

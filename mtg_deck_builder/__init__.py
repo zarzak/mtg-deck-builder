@@ -68,7 +68,7 @@ from .oracle_validation import (
     ValidationReport, RoleDisagreement,
 )
 
-__version__ = "0.9.33"
+__version__ = "0.9.34"
 
 __all__ = [
     # Models

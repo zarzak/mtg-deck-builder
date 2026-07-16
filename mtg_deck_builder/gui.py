@@ -636,6 +636,26 @@ def save_deck(csv_path: str, file_name: str, commander: str,
     return {"warnings": warnings}
 
 
+def _load_cached_combos(commander_name: str,
+                        cache_dir: str = "./combo_cache") -> Optional[list]:
+    """v0.9.34: read the commander's cached combos for goldfish combo odds.
+    Model-agnostic (globs any model's cache file); None when absent."""
+    import glob as _glob
+    slug = re.sub(r"[^A-Za-z0-9._-]", "_", commander_name)
+    matches = sorted(_glob.glob(os.path.join(cache_dir, f"combos_{slug}_*.json")),
+                     key=os.path.getmtime, reverse=True)
+    if not matches:
+        return None
+    try:
+        from .models import Combo
+        data = json.loads(Path(matches[0]).read_text(encoding="utf-8"))
+        combos = [Combo(**c) for c in data.get("combos", [])]
+        return combos or None
+    except Exception as e:
+        logger.warning(f"GUI: combo cache read failed ({e})")
+        return None
+
+
 _card_source = None
 _card_source_lock = threading.Lock()
 
@@ -819,12 +839,54 @@ def make_handler(csv_path: str, jobs: JobManager):
                     (qs.get("q") or [""])[0],
                     commanders_only=(qs.get("commanders") or ["0"])[0] == "1",
                 )})
+            elif self.path.startswith("/api/goldfish"):
+                self._goldfish_view()
             elif self.path.startswith("/api/deck"):
                 self._deck_view()
             elif self.path.startswith("/files/"):
                 self._serve_file(self.path[len("/files/"):])
             else:
                 self._json({"error": "not found"}, 404)
+
+        def _goldfish_view(self):
+            """v0.9.34 (#35): Monte-Carlo playtest a deck file. Pure local
+            simulation — no API calls, ~1s for 500 trials."""
+            qs = urllib.parse.parse_qs(
+                urllib.parse.urlparse(self.path).query)
+            raw = (qs.get("file") or [""])[0]
+            f = safe_relpath(raw)
+            if f is None or not f.is_file():
+                self._json({"error": "deck file not found"}, 404)
+                return
+            db = _get_db(csv_path)
+            if db is None:
+                self._json({"error": "card database unavailable"}, 500)
+                return
+            try:
+                parsed = parse_decklist(f)
+                commander = db.get_by_name(parsed.get("commander") or "")
+                if commander is None:
+                    self._json({"error": "commander not found in DB"}, 400)
+                    return
+                cards, skipped = [], 0
+                for section in parsed["sections"]:
+                    for entry in section["cards"]:
+                        card = db.get_by_name(entry["name"])
+                        if card is None:
+                            skipped += 1
+                        else:
+                            cards.extend([card] * entry["count"])
+                combos = _load_cached_combos(commander.name)
+                from .goldfish import GoldfishConfig, simulate
+                trials = int((qs.get("trials") or ["500"])[0])
+                report = simulate(
+                    cards, commander, combos=combos,
+                    config=GoldfishConfig(trials=min(trials, 5000)))
+                out = report.to_dict()
+                out["skipped_cards"] = skipped
+                self._json(out)
+            except Exception as e:
+                self._json({"error": f"goldfish failed: {e}"}, 500)
 
         def _deck_view(self):
             qs = urllib.parse.parse_qs(

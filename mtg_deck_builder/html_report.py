@@ -223,6 +223,49 @@ def _render_telemetry_table(
     )
 
 
+def _render_goldfish_section(gf: Optional[dict]) -> str:
+    """v0.9.34 (#35): goldfish-simulation results. Empty string when the
+    simulation didn't run (legacy results)."""
+    if not gf or not gf.get("trials"):
+        return ""
+    lands = gf.get("avg_lands_by_turn", {}) or {}
+    mana = gf.get("avg_mana_by_turn", {}) or {}
+    cast = gf.get("commander_cast_by_turn", {}) or {}
+    combo = gf.get("any_combo_drawn_by_turn", {}) or {}
+    turns = sorted(lands, key=lambda k: int(k))
+
+    def _row(label, series, fmt):
+        cells = "".join(
+            f'<td class="num">{fmt(series.get(t, series.get(str(t), 0)))}</td>'
+            for t in turns)
+        return f"<tr><td>{label}</td>{cells}</tr>"
+
+    head = "".join(f"<th>T{t}</th>" for t in turns)
+    rows = [
+        _row("Avg lands in play", lands, lambda v: f"{v:.1f}"),
+        _row("Avg mana available", mana, lambda v: f"{v:.1f}"),
+        _row("Commander cast by", cast, lambda v: f"{v:.0%}"),
+    ]
+    if combo:
+        rows.append(_row("Any combo drawn by", combo, lambda v: f"{v:.0%}"))
+
+    uncast = gf.get("commander_uncast_rate", 0) or 0
+    return (
+        "<h2>Goldfish simulation</h2><div class=\"card\">"
+        f"<p class='meta'>{gf['trials']} simulated games over "
+        f"{gf['turns']} turns (colors ignored; artifact ramp only). "
+        f"Keepable opening 7: <b>{gf.get('keep7_rate', 0):.0%}</b> · "
+        f"avg mulligans {gf.get('avg_mulligans', 0):.2f} · "
+        f"missed a land drop by turn 3: "
+        f"{gf.get('missed_drop_by_t3_rate', 0):.0%} · "
+        f"avg commander turn <b>{gf.get('avg_commander_turn', 0):.1f}</b>"
+        + (f" (uncast within horizon {uncast:.0%})" if uncast > 0.005 else "")
+        + "</p>"
+        f"<table><thead><tr><th></th>{head}</tr></thead><tbody>"
+        + "".join(rows) + "</tbody></table></div>"
+    )
+
+
 def _render_role_counts_table(role_counts: dict[str, int]) -> str:
     rows = []
     for role, count in sorted(role_counts.items()):
@@ -238,10 +281,17 @@ def _render_role_counts_table(role_counts: dict[str, int]) -> str:
     )
 
 
-def _render_combos_section(combos, deck_names: set[str]) -> str:
+def _render_combos_section(combos, deck_names: set[str],
+                           upgrade_suggestions=None) -> str:
     """Render the v0.9.8 combo section: which detected combos the final deck
     fully assembled or came one piece short of. Empty string when combo
-    detection didn't run (so the section vanishes for legacy builds)."""
+    detection didn't run (so the section vanishes for legacy builds).
+
+    v0.9.34 (#36): when the builder computed card-centric
+    `upgrade_suggestions`, the one-piece-away view renders as an actionable
+    "add THIS card -> completes THESE combos" table (bracket-banned combos
+    already excluded upstream) instead of the raw per-combo listing.
+    """
     if not combos:
         return ""
 
@@ -283,7 +333,32 @@ def _render_combos_section(combos, deck_names: set[str]) -> str:
             "<th>Result</th><th>Payoff</th></tr></thead><tbody>"
             + rows + "</tbody></table>"
         )
-    if near:
+    if upgrade_suggestions:
+        rows = "".join(
+            f"<tr><td><b>{html.escape(s['card'])}</b></td>"
+            + "<td>"
+            + "<br>".join(
+                html.escape(" + ".join(c["with"]))
+                + f" <span class='meta'>({c['payoff']})</span>"
+                for c in s["completes"][:3]
+            )
+            + ("<br><span class='meta'>…and "
+               f"{len(s['completes']) - 3} more</span>"
+               if len(s["completes"]) > 3 else "")
+            + "</td>"
+            + f'<td class="num">{s["best_payoff"]}</td></tr>'
+            for s in upgrade_suggestions
+        )
+        parts.append(
+            "<h3 style='margin:.6rem 0 .3rem'>Upgrade suggestions — one "
+            f"card away ({len(upgrade_suggestions)})</h3>"
+            "<p class='meta'>Adding any card below completes the listed "
+            "detected combo(s). Bracket-banned combos are excluded.</p>"
+            "<table><thead><tr><th>Add</th><th>Completes</th>"
+            "<th>Best payoff</th></tr></thead><tbody>"
+            + rows + "</tbody></table>"
+        )
+    elif near:
         near.sort(reverse=True)
         rows = "".join(
             f"<tr><td>{html.escape(' + '.join(present))}</td>"
@@ -489,7 +564,13 @@ def generate_html_report(
     if deck.commander is not None:
         deck_names.add(deck.commander.name)
     combos_section = _render_combos_section(
-        getattr(result, "combos", None), deck_names
+        getattr(result, "combos", None), deck_names,
+        upgrade_suggestions=getattr(result, "upgrade_suggestions", None),
+    )
+
+    # v0.9.34 (#35): goldfish-simulation consistency metrics.
+    goldfish_section = _render_goldfish_section(
+        getattr(result, "goldfish", None)
     )
 
     # Telemetry table (with card thumbnails if card_source present)
@@ -654,6 +735,8 @@ def generate_html_report(
   <div class="card">{role_counts_html}</div>
 
   {combos_section}
+
+  {goldfish_section}
 
   {gallery_section}
 
